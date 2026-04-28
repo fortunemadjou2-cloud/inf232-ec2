@@ -3,496 +3,489 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
+import sqlite3
+from datetime import datetime
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 from sklearn.ensemble import RandomForestClassifier
-from datetime import datetime
 from sklearn.metrics import r2_score
 from sklearn.model_selection import cross_val_score
+import hashlib
+import os
 
-# Configuration
-st.set_page_config(page_title="NEXHEALTH SURVEY NO TABOO", page_icon="🩺", layout="wide")
+# ==================== CONFIGURATION ====================
+st.set_page_config(
+    page_title="NEXHEALTH SURVEY NO TABOO",
+    page_icon="🫂🩺",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
 
-# Titre
-st.title("🩺 NEXHEALTH SURVEY NO TABOO")
-
-# Slogan
+# ==================== STYLE CSS MODERNE ====================
 st.markdown("""
-**✨ Parce qu'en santé, il n'y a pas de tabou. ✨**  
-**🔍 Brisons le silence sur les IST, protégeons notre bien-être.**  
-**⚖️ La santé sexuelle est un droit, la protection est une responsabilité.**
-""")
-
-# Initialisation des données
-if 'donnees' not in st.session_state:
-    st.session_state.donnees = pd.DataFrame(columns=[
-        'Date', 'Age', 'Sexe', 'Pays', 'Profession', 'Niveau_Etude',
-        'Partenaires_Sexuels', 'Utilisation_Preservatifs', 'Nb_Partenaires',
-        'Rapport_Non_Protege', 'Alcool_Substances',
-        'Connaissance_IST', 'Deja_Depiste', 'Participation_Campagnes',
-        'Influence_Reseaux_Sociaux', 'IST_Diagnostiquee', 'Vaccin_HPV'
-    ])
+<style>
+    /* Bannière */
+    .banner {
+        background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 50%, #4caf50 100%);
+        padding: 30px;
+        border-radius: 20px;
+        text-align: center;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        color: white;
+    }
+    .banner h1 {
+        font-size: 2.8rem;
+        font-weight: bold;
+        font-style: italic;
+        margin: 0;
+        letter-spacing: 2px;
+    }
+    .banner p {
+        font-size: 1.2rem;
+        font-weight: bold;
+        font-style: italic;
+        margin: 10px 0 0 0;
+        opacity: 0.95;
+    }
+    .banner-sub {
+        font-size: 1rem;
+        margin: 5px 0;
+        opacity: 0.9;
+    }
     
-    # 30 données de démonstration
-    np.random.seed(42)
-    for i in range(30):
-        demo = pd.DataFrame([{
-            'Date': datetime.now().strftime("%Y-%m-%d %H:%M"),
-            'Age': int(np.random.randint(18, 65)),
-            'Sexe': np.random.choice(["Homme", "Femme"]),
-            'Pays': np.random.choice(["Cameroun", "Sénégal", "Côte d'Ivoire", "Nigéria", "Kenya"]),
-            'Profession': np.random.choice(["Étudiant", "Employé", "Indépendant", "Fonctionnaire"]),
-            'Niveau_Etude': np.random.choice(["Secondaire", "Universitaire", "Supérieur"]),
-            'Partenaires_Sexuels': np.random.choice(["Oui", "Non"], p=[0.85,0.15]),
-            'Utilisation_Preservatifs': np.random.choice(["Jamais", "Rarement", "Parfois", "Souvent", "Systématiquement"]),
-            'Nb_Partenaires': np.random.choice(["1", "2-5", "6-10", "11-20"]),
-            'Rapport_Non_Protege': np.random.choice(["Jamais", "Une fois", "Plusieurs fois"]),
-            'Alcool_Substances': np.random.choice(["Jamais", "Rarement", "Parfois", "Souvent"]),
-            'Connaissance_IST': np.random.choice(["Très mauvaise", "Mauvaise", "Moyenne", "Bonne", "Très bonne"]),
-            'Deja_Depiste': np.random.choice(["Jamais", "Une fois", "Plusieurs fois", "Régulièrement"]),
-            'Participation_Campagnes': np.random.choice(["Jamais", "Rarement", "Parfois", "Souvent", "Très souvent"]),
-            'Influence_Reseaux_Sociaux': np.random.choice(["Négativement", "Neutre", "Positivement"]),
-            'IST_Diagnostiquee': np.random.choice(["Non", "Faible", "Modéré", "Élevé"], p=[0.6,0.2,0.1,0.1]),
-            'Vaccin_HPV': np.random.choice(["Non", "Oui", "Je ne sais pas"], p=[0.6,0.2,0.2])
-        }])
-        st.session_state.donnees = pd.concat([st.session_state.donnees, demo], ignore_index=True)
+    /* Carrés menu */
+    .menu-card {
+        background: white;
+        padding: 25px 15px;
+        border-radius: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border: 1px solid #e0e0e0;
+        margin-bottom: 20px;
+    }
+    .menu-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        border-color: #2e7d32;
+    }
+    .menu-card-selected {
+        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        border: 2px solid #2e7d32;
+        box-shadow: 0 10px 25px rgba(46,125,50,0.2);
+    }
+    .menu-icon {
+        font-size: 3rem;
+        margin-bottom: 10px;
+    }
+    .menu-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #1b5e20;
+        margin: 0;
+    }
+    
+    /* Cartes prévention */
+    .risk-card {
+        background: white;
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+        border-left: 5px solid #2e7d32;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .risk-card h4 {
+        color: #1b5e20;
+        margin-top: 0;
+    }
+    
+    /* Footer */
+    .footer {
+        text-align: center;
+        padding: 20px;
+        margin-top: 40px;
+        background: linear-gradient(135deg, #1b5e20, #2e7d32);
+        color: white;
+        border-radius: 15px;
+        font-weight: bold;
+    }
+</style>
+""", unsafe_allow_html=True)
 
-# Sidebar
-with st.sidebar:
-    st.markdown("**Réalisé par : MADJOU FORTUNE NESLINE - 24G2876**")
-    st.markdown("📚 **Programme INF232 EC2**")
+# ==================== BANNIÈRE ====================
+st.markdown("""
+<div class="banner">
+    <h1>🫂🩺 NEXHEALTH SURVEY NO TABOO</h1>
+    <p>✨ Parce qu'en santé, il n'y a pas de tabou. ✨</p>
+    <div class="banner-sub">🔍 Brisons le silence sur les IST, protégeons notre bien-être.</div>
+    <div class="banner-sub">⚖️ La santé sexuelle est un droit, la protection est une responsabilité.</div>
+</div>
+""", unsafe_allow_html=True)
+
+# ==================== INITIALISATION DE LA BASE DE DONNÉES SQLITE ====================
+DB_NAME = "nexhealth.db"
+
+def init_database():
+    """Crée la base de données et la table si elles n'existent pas"""
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS participants (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            date TEXT,
+            age INTEGER,
+            sexe TEXT,
+            pays TEXT,
+            profession TEXT,
+            niveau_etude TEXT,
+            partenaires_sexuels TEXT,
+            utilisation_preservatifs TEXT,
+            nb_partenaires TEXT,
+            rapport_non_protege TEXT,
+            alcool_substances TEXT,
+            connaissance_ist TEXT,
+            deja_depiste TEXT,
+            participation_campagnes TEXT,
+            influence_reseaux_sociaux TEXT,
+            ist_diagnostiquee TEXT,
+            vaccin_hpv TEXT
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+def sauvegarder_participant(data):
+    """Sauvegarde un participant dans la base SQLite"""
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute('''
+        INSERT INTO participants (
+            date, age, sexe, pays, profession, niveau_etude,
+            partenaires_sexuels, utilisation_preservatifs, nb_partenaires,
+            rapport_non_protege, alcool_substances, connaissance_ist,
+            deja_depiste, participation_campagnes, influence_reseaux_sociaux,
+            ist_diagnostiquee, vaccin_hpv
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', data)
+    conn.commit()
+    conn.close()
+
+def charger_participants():
+    """Charge tous les participants depuis SQLite vers un DataFrame"""
+    conn = sqlite3.connect(DB_NAME)
+    df = pd.read_sql_query("SELECT * FROM participants", conn)
+    conn.close()
+    return df
+
+def supprimer_toutes_donnees():
+    """Supprime toutes les données de la base"""
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("DELETE FROM participants")
+    conn.commit()
+    conn.close()
+
+# ==== Initialisation de la base ====
+init_database()
+
+# ==================== SESSION STATE POUR LE MENU ====================
+if 'page' not in st.session_state:
+    st.session_state.page = "ajouter"
+
+# ==================== MENU PRINCIPAL EN CARRÉS ====================
+st.markdown("---")
+
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+    if st.button("✏️🫂\nAJOUTER\nPARTICIPANT", use_container_width=True, type="primary" if st.session_state.page == "ajouter" else "secondary"):
+        st.session_state.page = "ajouter"
+        st.rerun()
+
+with col2:
+    if st.button("📋👥\nPARTICIPANTS\nENREGISTRÉS", use_container_width=True, type="primary" if st.session_state.page == "participants" else "secondary"):
+        st.session_state.page = "participants"
+        st.rerun()
+
+with col3:
+    if st.button("📈🔬\nANALYSES\nAVANCÉES", use_container_width=True, type="primary" if st.session_state.page == "analyses" else "secondary"):
+        st.session_state.page = "analyses"
+        st.rerun()
+
+with col4:
+    if st.button("📚🩺\nPRÉVENTION\n& RISQUES", use_container_width=True, type="primary" if st.session_state.page == "prevention" else "secondary"):
+        st.session_state.page = "prevention"
+        st.rerun()
+
+st.markdown("---")
+
+# ==================== CONTENU SELON LA PAGE ====================
+
+# ----- PAGE 1 : AJOUTER UN PARTICIPANT -----
+if st.session_state.page == "ajouter":
+    st.header("🫂✏️ Ajouter un nouveau participant")
+    st.markdown("*Toutes vos réponses sont anonymes et seront conservées dans la base de données.*")
+    
+    with st.form("collecte", clear_on_submit=True):
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("**👤 Votre profil**")
+            age = st.slider("Âge", 15, 95, 25)
+            sexe = st.radio("Sexe", ["Homme", "Femme", "Autre"])
+            pays = st.selectbox("Pays", ["Cameroun", "Sénégal", "Côte d'Ivoire", "Nigéria", "Kenya", "Autre"])
+            profession = st.selectbox("Profession", ["Étudiant", "Employé", "Indépendant", "Fonctionnaire", "Sans emploi"])
+            niveau_etude = st.selectbox("Niveau d'étude", ["Secondaire", "Universitaire", "Supérieur", "Aucun"])
+        
+        with col2:
+            st.markdown("**💕 Habitudes et comportements**")
+            utilisation_preservatifs = st.select_slider("Utilisation des préservatifs", options=["Jamais", "Rarement", "Parfois", "Souvent", "Systématiquement"])
+            nb_partenaires = st.selectbox("Nombre de partenaires", ["1", "2-5", "6-10", "11-20", "20+"])
+            rapport_non_protege = st.selectbox("Avez-vous eu un rapport non protégé ?", ["Jamais", "Une fois", "Plusieurs fois"])
+            
+            st.markdown("**🏥 Connaissance et dépistage**")
+            connaissance_ist = st.select_slider("Connaissance des IST", options=["Très mauvaise", "Mauvaise", "Moyenne", "Bonne", "Très bonne"])
+            deja_depiste = st.radio("Déjà dépisté ?", ["Jamais", "Une fois", "Plusieurs fois", "Régulièrement"])
+            participation_campagnes = st.select_slider("Participation aux campagnes", options=["Jamais", "Rarement", "Parfois", "Souvent", "Très souvent"])
+            
+            st.markdown("**📱 Réseaux sociaux**")
+            influence_reseaux = st.select_slider("Influence des réseaux sociaux", options=["Négativement", "Neutre", "Positivement"])
+        
+        st.markdown("---")
+        submitted = st.form_submit_button("✅ Enregistrer le participant", use_container_width=True)
+        
+        if submitted:
+            data = (
+                datetime.now().strftime("%Y-%m-%d %H:%M"),
+                age, sexe, pays, profession, niveau_etude,
+                "Oui", utilisation_preservatifs, nb_partenaires,
+                rapport_non_protege, "Parfois", connaissance_ist,
+                deja_depiste, participation_campagnes, influence_reseaux,
+                "Non renseigné", "Non"
+            )
+            sauvegarder_participant(data)
+            st.success("✅ Participant enregistré avec succès !")
+            st.balloons()
+
+# ----- PAGE 2 : PARTICIPANTS ENREGISTRÉS -----
+elif st.session_state.page == "participants":
+    st.header("📋👥 Participants enregistrés")
+    
+    df = charger_participants()
+    
+    if len(df) == 0:
+        st.info("📭 Aucun participant pour le moment. Utilisez l'onglet 'AJOUTER PARTICIPANT' pour commencer.")
+    else:
+        st.markdown(f"**Total : {len(df)} participant(s) dans la base de données**")
+        st.dataframe(df, use_container_width=True)
+        
+        csv = df.to_csv(index=False).encode('utf-8')
+        col1, col2 = st.columns(2)
+        with col1:
+            st.download_button("📥 Exporter les données (CSV)", csv, "participants_ist.csv", "text/csv")
+        with col2:
+            if st.button("🗑️ Supprimer toutes les données", use_container_width=True):
+                supprimer_toutes_donnees()
+                st.success("Toutes les données ont été supprimées !")
+                st.rerun()
+
+# ----- PAGE 3 : ANALYSES AVANCÉES -----
+elif st.session_state.page == "analyses":
+    st.header("📈🔬 Analyses avancées des données")
+    
+    df = charger_participants()
+    
+    if len(df) < 3:
+        st.warning(f"⚠️ Besoin d'au moins 3 participants pour les analyses. Actuellement : {len(df)} participant(s).")
+    else:
+        # Conversion des données
+        df['Age'] = pd.to_numeric(df['Age'], errors='coerce')
+        df['Connaissance_num'] = df['connaissance_ist'].map({'Très mauvaise':1,'Mauvaise':2,'Moyenne':3,'Bonne':4,'Très bonne':5})
+        df['Preservatifs_num'] = df['utilisation_preservatifs'].map({'Jamais':1,'Rarement':2,'Parfois':3,'Souvent':4,'Systématiquement':5})
+        df['Campagnes_num'] = df['participation_campagnes'].map({'Jamais':1,'Rarement':2,'Parfois':3,'Souvent':4,'Très souvent':5})
+        df['Influence_num'] = df['influence_reseaux_sociaux'].map({'Négativement':1,'Neutre':2,'Positivement':3})
+        df['Nb_partenaires_num'] = df['nb_partenaires'].map({'1':1,'2-5':2,'6-10':3,'11-20':4,'20+':5})
+        
+        df_clean = df.dropna(subset=['Age', 'Connaissance_num', 'Preservatifs_num'])
+        
+        # Score de risque
+        df_clean['Score_Risque'] = (
+            (6 - df_clean['Preservatifs_num']) * 2 +
+            df_clean['Nb_partenaires_num'] * 1.5 +
+            (df_clean['rapport_non_protege'].map({'Jamais':0, 'Une fois':1, 'Plusieurs fois':2})) * 2 +
+            (df_clean['Connaissance_num'] < 3).astype(int) * 2
+        )
+        df_clean['Categorie_Risque'] = df_clean['Score_Risque'].apply(lambda x: 'Faible' if x <= 8 else ('Modéré' if x <= 15 else 'Élevé'))
+        
+        # Sous-onglets
+        anal_tab1, anal_tab2, anal_tab3, anal_tab4, anal_tab5 = st.tabs([
+            "📈 Régression simple", "🔬 Régression multiple", "🎯 PCA", "🏷️ Classification", "🔄 Clustering"
+        ])
+        
+        # Régression simple
+        with anal_tab1:
+            if len(df_clean) >= 3:
+                X = df_clean[['Age']].values
+                y = df_clean['Connaissance_num'].values
+                modele = LinearRegression().fit(X, y)
+                fig = px.scatter(df_clean, x='Age', y='Connaissance_num', title="Âge vs Connaissance des IST",
+                                 color='Categorie_Risque', hover_data=['profession'])
+                x_range = np.linspace(df_clean['Age'].min(), df_clean['Age'].max(), 100)
+                y_pred = modele.predict(x_range.reshape(-1, 1))
+                fig.add_trace(go.Scatter(x=x_range, y=y_pred, mode='lines', name='Tendance', line=dict(color='red')))
+                st.plotly_chart(fig, use_container_width=True)
+                st.metric("R²", f"{r2_score(y, modele.predict(X)):.3f}")
+                st.info("📖 Plus le R² est proche de 1, plus l'âge explique les différences de connaissance.")
+        
+        # Régression multiple
+        with anal_tab2:
+            if len(df_clean) >= 5:
+                X = df_clean[['Age', 'Preservatifs_num', 'Nb_partenaires_num', 'Campagnes_num']].values
+                y = df_clean['Connaissance_num'].values
+                modele = LinearRegression().fit(X, y)
+                coef_df = pd.DataFrame({'Facteur': ['Âge', 'Préservatifs', 'Nb partenaires', 'Campagnes'], 'Coefficient': modele.coef_})
+                st.dataframe(coef_df)
+                predictions = modele.predict(X)
+                fig = px.scatter(x=y, y=predictions, title="Prédictions vs Réalité")
+                fig.add_trace(go.Scatter(x=[1,5], y=[1,5], mode='lines', name='Parfait', line=dict(dash='dash')))
+                st.plotly_chart(fig, use_container_width=True)
+                st.metric("R²", f"{r2_score(y, predictions):.3f}")
+        
+        # PCA
+        with anal_tab3:
+            if len(df_clean) >= 4:
+                features = ['Age', 'Connaissance_num', 'Preservatifs_num', 'Nb_partenaires_num', 'Campagnes_num']
+                scaler = StandardScaler()
+                X_scaled = scaler.fit_transform(df_clean[features])
+                pca = PCA(n_components=2)
+                result = pca.fit_transform(X_scaled)
+                df_viz = pd.DataFrame({'PC1': result[:,0], 'PC2': result[:,1], 'Risque': df_clean['Categorie_Risque']})
+                fig = px.scatter(df_viz, x='PC1', y='PC2', color='Risque', title="Projection PCA")
+                st.plotly_chart(fig, use_container_width=True)
+        
+        # Classification
+        with anal_tab4:
+            if len(df_clean) >= 6:
+                df_clean['Cible'] = (df_clean['Categorie_Risque'] == 'Élevé').astype(int)
+                X = df_clean[['Age', 'Preservatifs_num', 'Nb_partenaires_num', 'Campagnes_num', 'Connaissance_num']].values
+                y = df_clean['Cible'].values
+                rf = RandomForestClassifier(n_estimators=100, random_state=42, max_depth=4).fit(X, y)
+                
+                importance = pd.DataFrame({'Facteur': ['Âge', 'Préservatifs', 'Partenaires', 'Campagnes', 'Connaissance'],
+                                          'Importance %': (rf.feature_importances_ * 100).round(1)})
+                st.dataframe(importance)
+                
+                st.subheader("🔮 Évaluez votre risque")
+                col1, col2 = st.columns(2)
+                with col1:
+                    age_t = st.slider("Âge", 18, 65, 25, key="risk_age")
+                    preserv_t = st.select_slider("Préservatifs", options=["Systématiquement", "Souvent", "Parfois", "Rarement", "Jamais"], key="risk_preserv")
+                with col2:
+                    partenaires_t = st.select_slider("Partenaires", options=["1", "2-5", "6-10", "11-20", "20+"], key="risk_partenaires")
+                    connais_t = st.select_slider("Connaissance", options=["Très bonne", "Bonne", "Moyenne", "Mauvaise", "Très mauvaise"], key="risk_connais")
+                
+                if st.button("Estimer mon risque"):
+                    p_map = {"Systématiquement":5, "Souvent":4, "Parfois":3, "Rarement":2, "Jamais":1}
+                    k_map = {"1":1, "2-5":2, "6-10":3, "11-20":4, "20+":5}
+                    c_map = {"Très bonne":5, "Bonne":4, "Moyenne":3, "Mauvaise":2, "Très mauvaise":1}
+                    pred = rf.predict([[age_t, p_map[preserv_t], k_map[partenaires_t], 3, c_map[connais_t]]])[0]
+                    if pred == 1:
+                        st.error("⚠️ Risque ÉLEVÉ")
+                    else:
+                        st.success("✅ Risque FAIBLE à MODÉRÉ")
+        
+        # Clustering
+        with anal_tab5:
+            if len(df_clean) >= 5:
+                X = df_clean[['Age', 'Connaissance_num', 'Preservatifs_num', 'Nb_partenaires_num']].values
+                scaler = StandardScaler()
+                X_scaled = scaler.fit_transform(X)
+                k = st.slider("Nombre de segments", 2, 4, 3)
+                kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
+                clusters = kmeans.fit_predict(X_scaled)
+                fig = px.scatter(df_clean, x='Age', y='Connaissance_num', color=clusters.astype(str),
+                                 title=f"Segmentation en {k} groupes")
+                st.plotly_chart(fig, use_container_width=True)
+
+# ----- PAGE 4 : PRÉVENTION & RISQUES -----
+elif st.session_state.page == "prevention":
+    st.header("📚🩺 Prévention, conséquences et risques liés aux IST")
+    
+    # Conséquences sur la vie quotidienne
+    with st.expander("🏠 Conséquences sur la vie quotidienne", expanded=True):
+        st.markdown("""
+        - **Douleurs chroniques** : Douleurs abdominales, pelviennes ou lors des rapports sexuels
+        - **Fatigue persistante** : Épuisement physique et mental récurrent
+        - **Impact sur la vie sexuelle** : Baisse de libido, douleurs, peur de transmettre
+        - **Stigmatisation sociale** : Isolement, jugement, difficultés relationnelles
+        - **Anxiété et dépression** : Stress lié au diagnostic, à la contagiosité, au regard des autres
+        - **Arrêts de travail répétés** : Consultations médicales, traitements longs
+        """)
+    
+    # Conséquences à long terme
+    with st.expander("⏰ Conséquences à long terme", expanded=True):
+        st.markdown("""
+        - **Infertilité** (homme et femme) : Lésions des trompes, obstruction des canaux déférents
+        - **Grossesses extra-utérines** : Risque vital nécessitant une intervention rapide
+        - **Cancers** : HPV responsable de cancers du col de l'utérus, de l'anus, du pénis
+        - **Transmission mère-enfant** : Pendant la grossesse ou l'accouchement
+        - **Complications neurologiques** : Syphilis tardive pouvant toucher le cerveau
+        - **Arthrite réactionnelle** : Inflammation articulaire post-infection
+        """)
+    
+    # Risques liés aux IST non traitées
+    with st.expander("⚠️ Risques des IST non traitées", expanded=True):
+        st.markdown("""
+        - **Aggravation des symptômes** : Douleurs plus intenses, lésions plus étendues
+        - **Propagation à d'autres personnes** : Contagiosité prolongée
+        - **Développement de résistances** : Aux traitements antibiotiques
+        - **Augmentation du risque VIH** : Jusqu'à 10 fois plus élevé
+        - **Complications irréversibles** : Stérilité, lésions neurologiques
+        - **Propagation à d'autres organes** : Dissémination de l'infection
+        """)
+    
     st.markdown("---")
     
-    st.header("📝 Formulaire de collecte")
-    st.markdown("*Toutes vos réponses sont anonymes*")
+    # Symptômes
+    with st.expander("🚨 Symptômes évocateurs - Consultez rapidement", expanded=True):
+        st.markdown("""
+        - Écoulements anormaux (urètre, vagin, anus)
+        - Douleurs ou brûlures en urinant
+        - Lésions, boutons, ulcères ou verrues sur les organes génitaux
+        - Démangeaisons intenses ou irritations
+        - Ganglions anormalement gonflés dans l'aine
+        - Fièvre inexpliquée
+        """)
+        st.warning("⚠️ **Certaines IST sont asymptomatiques** - Dépistage régulier indispensable")
     
-    with st.form("collecte"):
-        st.markdown("### 👤 Votre profil")
-        age = st.slider("Âge", 15, 95, 25)
-        sexe = st.radio("Sexe", ["Homme", "Femme", "Autre"])
-        pays = st.selectbox("Pays", ["Cameroun", "Sénégal", "Côte d'Ivoire", "Nigéria", "Kenya", "Autre"])
-        profession = st.selectbox("Profession", ["Étudiant", "Employé", "Indépendant", "Fonctionnaire", "Sans emploi"])
-        
-        st.markdown("---")
-        st.markdown("### 💕 Habitudes")
-        utilisation_preservatifs = st.select_slider("Utilisation des préservatifs", options=["Jamais", "Rarement", "Parfois", "Souvent", "Systématiquement"])
-        nb_partenaires = st.selectbox("Nombre de partenaires", ["1", "2-5", "6-10", "11-20", "20+"])
-        rapport_non_protege = st.selectbox("Avez-vous eu un rapport non protégé ?", ["Jamais", "Une fois", "Plusieurs fois"])
-        
-        st.markdown("---")
-        st.markdown("### 🏥 Connaissance")
-        connaissance_ist = st.select_slider("Connaissance des IST", options=["Très mauvaise", "Mauvaise", "Moyenne", "Bonne", "Très bonne"])
-        deja_depiste = st.radio("Déjà dépisté ?", ["Jamais", "Une fois", "Plusieurs fois", "Régulièrement"])
-        participation_campagnes = st.select_slider("Participation aux campagnes", options=["Jamais", "Rarement", "Parfois", "Souvent", "Très souvent"])
-        
-        st.markdown("---")
-        st.markdown("### 📱 Réseaux sociaux")
-        influence_reseaux = st.select_slider("Influence des réseaux sociaux", options=["Négativement", "Neutre", "Positivement"])
-        
-        submit = st.form_submit_button("✅ Envoyer")
-        
-        if submit:
-            nouvelle = pd.DataFrame([{
-                'Date': datetime.now().strftime("%Y-%m-%d %H:%M"),
-                'Age': age, 'Sexe': sexe, 'Pays': pays, 'Profession': profession,
-                'Niveau_Etude': "Universitaire", 'Partenaires_Sexuels': "Oui",
-                'Utilisation_Preservatifs': utilisation_preservatifs, 'Nb_Partenaires': nb_partenaires,
-                'Rapport_Non_Protege': rapport_non_protege, 'Alcool_Substances': "Parfois",
-                'Connaissance_IST': connaissance_ist, 'Deja_Depiste': deja_depiste,
-                'Participation_Campagnes': participation_campagnes, 'Influence_Reseaux_Sociaux': influence_reseaux,
-                'IST_Diagnostiquee': "Non renseigné", 'Vaccin_HPV': "Non"
-            }])
-            st.session_state.donnees = pd.concat([st.session_state.donnees, nouvelle], ignore_index=True)
-            st.success("✅ Merci ! Votre réponse est enregistrée.")
-            st.balloons()
+    # Moyens de prévention
+    with st.expander("🛡️ Moyens de prévention efficaces", expanded=True):
+        st.markdown("""
+        - **Préservatifs masculins et féminins** (protection physique)
+        - **Dépistage régulier** (au moins 2x par an si vie sexuelle active)
+        - **Vaccination** (HPV, Hépatite B)
+        - **Communication** : parler de son statut avec son/sa partenaire
+        - **Réduction du nombre de partenaires**
+        """)
     
-    st.metric("👥 Participants", len(st.session_state.donnees))
-
-# Préparation des données
-df = st.session_state.donnees.copy()
-df['Age'] = pd.to_numeric(df['Age'], errors='coerce')
-df['Connaissance_num'] = df['Connaissance_IST'].map({'Très mauvaise':1,'Mauvaise':2,'Moyenne':3,'Bonne':4,'Très bonne':5})
-df['Preservatifs_num'] = df['Utilisation_Preservatifs'].map({'Jamais':1,'Rarement':2,'Parfois':3,'Souvent':4,'Systématiquement':5})
-df['Campagnes_num'] = df['Participation_Campagnes'].map({'Jamais':1,'Rarement':2,'Parfois':3,'Souvent':4,'Très souvent':5})
-df['Influence_num'] = df['Influence_Reseaux_Sociaux'].map({'Négativement':1,'Neutre':2,'Positivement':3})
-df['Partenaires_num'] = df['Nb_Partenaires'].map({'1':1,'2-5':2,'6-10':3,'11-20':4,'20+':5})
-
-# Score de risque
-df['Score_Risque'] = (
-    (6 - df['Preservatifs_num']) * 2 +
-    df['Partenaires_num'] * 1.5 +
-    df['Rapport_Non_Protege'].map({'Jamais':0, 'Une fois':1, 'Plusieurs fois':2}) * 2 +
-    (df['Connaissance_num'] < 3).astype(int) * 2
-)
-df['Categorie_Risque'] = df['Score_Risque'].apply(lambda x: 'Faible' if x <= 8 else ('Modéré' if x <= 15 else 'Élevé'))
-
-df_clean = df.dropna(subset=['Age', 'Connaissance_num', 'Preservatifs_num', 'Campagnes_num', 'Partenaires_num'])
-
-# Onglets
-tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
-    "📋 Participants", "📈 Régression simple", "🔬 Régression multiple", 
-    "🎯 PCA", "🏷️ Classification (Risque IST)", "🔄 Clustering", "📊 Graphiques", "📚 Prévention"
-])
-
-# ============================================================
-# TAB 0 : PARTICIPANTS
-# ============================================================
-with tab0:
-    st.header("📋 Participants à l'étude")
-    st.dataframe(df_clean, use_container_width=True)
-    csv = df_clean.to_csv(index=False).encode('utf-8')
-    st.download_button("📥 Télécharger les données (CSV)", csv, "donnees_ist.csv", "text/csv")
-
-# ============================================================
-# TAB 1 : RÉGRESSION SIMPLE
-# ============================================================
-with tab1:
-    st.header("📈 Régression simple : Âge → Connaissance des IST")
-    st.markdown("**Objectif :** Vérifier si l'âge influence le niveau de connaissance des IST.")
-    
-    if len(df_clean) >= 3:
-        X = df_clean[['Age']].values
-        y = df_clean['Connaissance_num'].values
-        modele = LinearRegression().fit(X, y)
-        
-        fig = px.scatter(df_clean, x='Age', y='Connaissance_num', 
-                         title="Âge vs Connaissance des IST",
-                         labels={'Connaissance_num': 'Niveau (1=Très mauvaise, 5=Très bonne)'},
-                         color='Categorie_Risque', hover_data=['Profession'])
-        x_range = np.linspace(df_clean['Age'].min(), df_clean['Age'].max(), 100)
-        y_pred = modele.predict(x_range.reshape(-1, 1))
-        fig.add_trace(go.Scatter(x=x_range, y=y_pred, mode='lines', 
-                                name='Tendance', line=dict(color='red', width=3)))
-        st.plotly_chart(fig, use_container_width=True)
-        
+    # Lieux de dépistage
+    with st.expander("📍 Où se faire dépister ?", expanded=True):
         col1, col2 = st.columns(2)
         with col1:
-            st.metric("📐 Coefficient", f"{modele.coef_[0]:.3f}")
-            if modele.coef_[0] > 0:
-                st.success("✅ Plus on est âgé, meilleure est la connaissance des IST")
-            else:
-                st.info("⚠️ Les jeunes ont une meilleure connaissance des IST")
+            st.markdown("**🇨🇲 Cameroun** : Hôpital Général Yaoundé, Hôpital Laquintinie Douala, ASES")
+            st.markdown("**🇸🇳 Sénégal** : Hôpital Fann Dakar, ALCS")
         with col2:
-            r2 = r2_score(y, modele.predict(X))
-            st.metric("🎯 R² (qualité)", f"{r2:.3f}")
-            if r2 > 0.5:
-                st.success("✅ L'âge explique bien les différences de connaissance")
-            else:
-                st.info("⚠️ D'autres facteurs que l'âge influencent la connaissance")
-        
-        st.info("""
-        **📖 Interprétation :**
-        - Chaque point représente un participant
-        - La ligne rouge montre la tendance générale
-        - Les couleurs indiquent le niveau de risque IST estimé
-        - R² proche de 1 = bonne prédiction
-        """)
-    else:
-        st.warning(f"⚠️ Besoin d'au moins 3 participants. Actuellement : {len(df_clean)}")
+            st.markdown("**🇨🇮 Côte d'Ivoire** : INHP Abidjan, Centre Treichville")
+            st.markdown("**🌍 Autres pays** : Hôpitaux publics, Croix-Rouge")
 
-# ============================================================
-# TAB 2 : RÉGRESSION MULTIPLE
-# ============================================================
-with tab2:
-    st.header("🔬 Régression multiple : Facteurs influençant la connaissance des IST")
-    st.markdown("**Objectif :** Identifier quels comportements sont liés à une meilleure connaissance des IST.")
-    
-    if len(df_clean) >= 5:
-        X = df_clean[['Age', 'Preservatifs_num', 'Partenaires_num', 'Campagnes_num']].values
-        y = df_clean['Connaissance_num'].values
-        modele = LinearRegression().fit(X, y)
-        
-        coef_df = pd.DataFrame({
-            'Facteur': ['Âge', 'Utilisation préservatifs', 'Nombre de partenaires', 'Participation campagnes'],
-            'Coefficient': modele.coef_,
-            'Impact': ['Positif' if c > 0 else 'Négatif' for c in modele.coef_]
-        })
-        st.dataframe(coef_df, use_container_width=True)
-        
-        predictions = modele.predict(X)
-        fig = px.scatter(x=y, y=predictions, color=df_clean['Categorie_Risque'],
-                         title="Qualité du modèle : prédictions vs réalité",
-                         labels={'x': 'Connaissance réelle', 'y': 'Connaissance prédite'})
-        fig.add_trace(go.Scatter(x=[1,5], y=[1,5], mode='lines', 
-                                name='Prédiction parfaite', line=dict(dash='dash', color='red')))
-        st.plotly_chart(fig, use_container_width=True)
-        
-        r2 = r2_score(y, predictions)
-        st.metric("📊 R² du modèle", f"{r2:.3f}")
-        
-        st.info("""
-        **📖 Interprétation :**
-        - Un coefficient POSITIF = plus le facteur augmente, meilleure est la connaissance
-        - Un coefficient NÉGATIF = plus le facteur augmente, moins bonne est la connaissance
-        - Les points proches de la ligne rouge indiquent une bonne prédiction
-        """)
-    else:
-        st.warning(f"⚠️ Besoin d'au moins 5 participants. Actuellement : {len(df_clean)}")
-
-# ============================================================
-# TAB 3 : PCA
-# ============================================================
-with tab3:
-    st.header("🎯 Analyse en Composantes Principales (PCA)")
-    st.markdown("**Objectif :** Visualiser les profils similaires dans un espace réduit à 2 dimensions.")
-    
-    if len(df_clean) >= 4:
-        features = ['Age', 'Connaissance_num', 'Preservatifs_num', 'Partenaires_num', 'Campagnes_num']
-        scaler = StandardScaler()
-        X_scaled = scaler.fit_transform(df_clean[features])
-        
-        pca = PCA(n_components=2)
-        pca_result = pca.fit_transform(X_scaled)
-        
-        df_viz = pd.DataFrame({
-            'PC1': pca_result[:, 0],
-            'PC2': pca_result[:, 1],
-            'Risque': df_clean['Categorie_Risque'],
-            'Âge': df_clean['Age']
-        })
-        
-        fig = px.scatter(df_viz, x='PC1', y='PC2', color='Risque', size='Âge',
-                         title="Projection des profils (les points proches se ressemblent)",
-                         labels={'PC1': f'Dimension 1 ({pca.explained_variance_ratio_[0]*100:.1f}%)',
-                                'PC2': f'Dimension 2 ({pca.explained_variance_ratio_[1]*100:.1f}%)'})
-        st.plotly_chart(fig, use_container_width=True)
-        
-        st.info("""
-        **📖 Interprétation :**
-        - Les POINTS PROCHES ont des comportements similaires
-        - Les COULEURS indiquent le niveau de risque IST
-        - Plus la variance expliquée est élevée, plus la projection est fidèle
-        """)
-    else:
-        st.warning(f"⚠️ Besoin d'au moins 4 participants. Actuellement : {len(df_clean)}")
-
-# ============================================================
-# TAB 4 : CLASSIFICATION (PRÉDICTION DU RISQUE)
-# ============================================================
-with tab4:
-    st.header("🏷️ Classification : Prédire son risque de contracter une IST")
-    st.markdown("**Objectif :** Le modèle apprend à estimer votre niveau de risque selon vos habitudes.")
-    
-    if len(df_clean) >= 6:
-        df_clean['Cible_Risque'] = (df_clean['Categorie_Risque'] == 'Élevé').astype(int)
-        
-        X = df_clean[['Age', 'Preservatifs_num', 'Partenaires_num', 'Campagnes_num', 'Connaissance_num']].values
-        y = df_clean['Cible_Risque'].values
-        
-        rf = RandomForestClassifier(n_estimators=100, random_state=42, max_depth=4)
-        rf.fit(X, y)
-        
-        # Importance des facteurs
-        importance_df = pd.DataFrame({
-            'Facteur': ['Âge', 'Préservatifs', 'Nombre de partenaires', 'Participation campagnes', 'Connaissance IST'],
-            'Importance (%)': (rf.feature_importances_ * 100).round(1)
-        }).sort_values('Importance (%)', ascending=False)
-        st.dataframe(importance_df, use_container_width=True)
-        
-        fig_imp = px.bar(importance_df, x='Importance (%)', y='Facteur', orientation='h',
-                         title="Facteurs influençant le risque IST")
-        st.plotly_chart(fig_imp, use_container_width=True)
-        
-        # Section test interactif
-        st.subheader("🔮 Évaluez VOTRE niveau de risque")
-        st.markdown("Renseignez vos habitudes ci-dessous pour une estimation personnalisée.")
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            age_test = st.slider("Votre âge", 18, 65, 25, key="risk_age")
-            preserv_test = st.select_slider("Utilisation des préservatifs", 
-                                           options=["Systématiquement", "Souvent", "Parfois", "Rarement", "Jamais"],
-                                           key="risk_preserv")
-            nb_partenaires_test = st.select_slider("Nombre de partenaires (environ)", options=["1", "2-5", "6-10", "11-20", "20+"],
-                                                   key="risk_partenaires")
-        with col2:
-            campagnes_test = st.select_slider("Participation aux campagnes de dépistage",
-                                             options=["Très souvent", "Souvent", "Parfois", "Rarement", "Jamais"],
-                                             key="risk_campagnes")
-            connais_test = st.select_slider("Connaissance des IST",
-                                           options=["Très bonne", "Bonne", "Moyenne", "Mauvaise", "Très mauvaise"],
-                                           key="risk_connais")
-        
-        if st.button("🔮 Estimer mon risque", key="predict_risk"):
-            # Conversion
-            preserv_map = {"Systématiquement":5, "Souvent":4, "Parfois":3, "Rarement":2, "Jamais":1}
-            campagnes_map = {"Très souvent":5, "Souvent":4, "Parfois":3, "Rarement":2, "Jamais":1}
-            connais_map = {"Très bonne":5, "Bonne":4, "Moyenne":3, "Mauvaise":2, "Très mauvaise":1}
-            partenaires_map = {"1":1, "2-5":2, "6-10":3, "11-20":4, "20+":5}
-            
-            preserv_val = preserv_map[preserv_test]
-            camp_val = campagnes_map[campagnes_test]
-            connais_val = connais_map[connais_test]
-            partenaires_val = partenaires_map[nb_partenaires_test]
-            
-            pred = rf.predict([[age_test, preserv_val, partenaires_val, camp_val, connais_val]])[0]
-            proba = rf.predict_proba([[age_test, preserv_val, partenaires_val, camp_val, connais_val]]).max()
-            
-            if pred == 1:
-                st.error(f"⚠️ **Risque ÉLEVÉ** (confiance : {proba:.1%})")
-                st.markdown("""
-                **💡 Recommandations pour réduire votre risque :**
-                - Utilisez des préservatifs à chaque rapport
-                - Réduisez le nombre de partenaires
-                - Faites-vous dépister régulièrement (2 fois par an)
-                - Participez aux campagnes de sensibilisation
-                - Consultez un professionnel de santé
-                """)
-            else:
-                st.success(f"✅ **Risque FAIBLE à MODÉRÉ** (confiance : {proba:.1%})")
-                st.markdown("""
-                **💡 Pour rester protégé(e) :**
-                - Continuez les bonnes pratiques
-                - Maintenez un dépistage régulier
-                - Sensibilisez votre entourage
-                """)
-        
-        # Précision du modèle
-        try:
-            scores = cross_val_score(rf, X, y, cv=min(3, len(np.unique(y))))
-            st.caption(f"📊 Précision du modèle : {scores.mean():.1%} (basé sur les données existantes)")
-        except:
-            pass
-    else:
-        st.warning(f"⚠️ Besoin d'au moins 6 participants. Actuellement : {len(df_clean)}")
-
-# ============================================================
-# TAB 5 : CLUSTERING
-# ============================================================
-with tab5:
-    st.header("🔄 Clustering : Segmentation automatique des profils")
-    st.markdown("**Objectif :** Regrouper automatiquement les personnes aux habitudes similaires.")
-    
-    if len(df_clean) >= 5:
-        features_cluster = ['Age', 'Connaissance_num', 'Preservatifs_num', 'Partenaires_num']
-        scaler = StandardScaler()
-        X_cluster = scaler.fit_transform(df_clean[features_cluster])
-        
-        k = st.slider("Nombre de segments (clusters)", 2, 4, 3, 
-                      help="Plus il y a de segments, plus la segmentation est fine")
-        kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
-        clusters = kmeans.fit_predict(X_cluster)
-        df_clean['Segment'] = clusters
-        
-        fig = px.scatter(df_clean, x='Age', y='Connaissance_num', 
-                         color=clusters.astype(str), size='Preservatifs_num',
-                         title=f"Segmentation des participants en {k} groupes",
-                         hover_data=['Profession', 'Categorie_Risque'])
-        st.plotly_chart(fig, use_container_width=True)
-        
-        st.subheader("📊 Profil type de chaque segment")
-        profil = df_clean.groupby('Segment')[['Age', 'Connaissance_num', 'Preservatifs_num', 'Partenaires_num']].mean().round(1)
-        profil.columns = ['Âge moyen', 'Connaissance (1-5)', 'Préservatifs (1-5)', 'Nombre de partenaires']
-        st.dataframe(profil)
-        
-        st.info("""
-        **📖 Interprétation :**
-        - Chaque couleur représente un groupe aux habitudes similaires
-        - Le tableau montre le profil type de chaque groupe
-        - Identifiez à quel groupe vous ressemblez pour mieux cibler vos besoins
-        """)
-    else:
-        st.warning(f"⚠️ Besoin d'au moins 5 participants. Actuellement : {len(df_clean)}")
-
-# ============================================================
-# TAB 6 : GRAPHIQUES STATISTIQUES
-# ============================================================
-with tab6:
-    st.header("📊 Graphiques statistiques descriptifs")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        st.subheader("📊 1. Distribution des âges (Histogramme)")
-        fig_hist = px.histogram(df_clean, x='Age', nbins=15, title="Âges des participants")
-        st.plotly_chart(fig_hist, use_container_width=True)
-        
-        st.subheader("📊 2. Niveau de connaissance des IST")
-        connais_counts = df_clean['Connaissance_IST'].value_counts().reset_index()
-        connais_counts.columns = ['Niveau', 'Nombre']
-        fig_bar = px.bar(connais_counts, x='Niveau', y='Nombre', title="Auto-évaluation")
-        st.plotly_chart(fig_bar, use_container_width=True)
-        
-        st.subheader("📊 3. Répartition par sexe")
-        fig_pie = px.pie(df_clean, names='Sexe', title="Hommes / Femmes")
-        st.plotly_chart(fig_pie, use_container_width=True)
-    
-    with col2:
-        st.subheader("📊 4. Répartition par profession")
-        prof_counts = df_clean['Profession'].value_counts().reset_index()
-        prof_counts.columns = ['Profession', 'Nombre']
-        fig_barh = px.bar(prof_counts, x='Nombre', y='Profession', orientation='h', title="Participants par profession")
-        st.plotly_chart(fig_barh, use_container_width=True)
-        
-        st.subheader("📊 5. Utilisation des préservatifs")
-        preserv_counts = df_clean['Utilisation_Preservatifs'].value_counts().reset_index()
-        preserv_counts.columns = ['Fréquence', 'Nombre']
-        fig_preserv = px.bar(preserv_counts, x='Fréquence', y='Nombre', title="Fréquence d'utilisation")
-        st.plotly_chart(fig_preserv, use_container_width=True)
-        
-        st.subheader("📊 6. Répartition par niveau de risque")
-        fig_risk = px.pie(df_clean, names='Categorie_Risque', title="Risque IST estimé")
-        st.plotly_chart(fig_risk, use_container_width=True)
-
-# ============================================================
-# TAB 7 : PRÉVENTION
-# ============================================================
-with tab7:
-    st.header("📚 Espace Prévention & Éducation")
-    
-    st.markdown("### 🚨 Symptômes évocateurs - Consultez immédiatement")
-    st.markdown("""
-    - Écoulements anormaux (urètre, vagin, anus)
-    - Douleurs ou brûlures en urinant
-    - Lésions, boutons, ulcères ou verrues sur les organes génitaux
-    - Démangeaisons intenses ou irritations persistantes
-    - Ganglions anormalement gonflés dans l'aine
-    - Fièvre inexpliquée accompagnée d'autres symptômes
-    """)
-    
-    st.warning("⚠️ **IMPORTANT** : Certaines IST sont asymptomatiques (sans symptômes visibles). Le seul moyen d'être sûr(e) de son statut est le **DÉPISTAGE RÉGULIER**.")
-    
-    st.info("📢 *Ces informations ne remplacent pas l'avis d'un médecin. Consultez un professionnel de santé pour tout diagnostic.*")
-    
-    st.markdown("### 🛡️ Les moyens de prévention efficaces")
-    st.markdown("""
-    - **Préservatifs masculins et féminins** : Protection contre la plupart des IST
-    - **Dépistage régulier** : Au moins 2 fois par an si vie sexuelle active
-    - **Vaccination** : Contre le HPV (Papillomavirus) et l'Hépatite B
-    - **Communication** : Parler de son statut avec le/la partenaire
-    """)
-    
-    st.markdown("### 📍 Où se faire dépister ?")
-    
-    with st.expander("🇨🇲 CAMEROUN"):
-        st.markdown("""
-        - **Hôpitaux publics** : Hôpital Général de Yaoundé, Hôpital Laquintinie (Douala)
-        - **Centres de santé communautaires** : Dans tous les arrondissements
-        - **Associations** : ASES (Association Santé Équitable), IRESCO
-        """)
-    
-    with st.expander("🇸🇳 SÉNÉGAL"):
-        st.markdown("""
-        - **Hôpital de Fann** (Dakar) - Service des maladies infectieuses
-        - **ALCS (Association de Lutte contre le Sida)** - Dépistage gratuit
-        - **Centres de santé régionaux** : Thiès, Saint-Louis, Ziguinchor
-        """)
-    
-    with st.expander("🇨🇮 CÔTE D'IVOIRE"):
-        st.markdown("""
-        - **INHP (Institut National d'Hygiène Publique)** - Abidjan
-        - **Centre de santé de Treichville**
-        - **Association Ivoirienne pour le Bien-être Familial (AIBEF)**
-        """)
-    
-    with st.expander("🌍 AUTRES PAYS"):
-        st.markdown("""
-        - Hôpitaux publics et centres de santé de district
-        - Organisations internationales : Croix-Rouge, Médecins du Monde
-        - Lignes d'écoute nationales (numéros verts)
-        """)
-
-# Footer
-st.markdown("---")
-st.markdown("📌 **Application développée par MADJOU FORTUNE NESLINE (24G2876) - Programme INF232 EC2**")
+# ==================== FOOTER ====================
+st.markdown("""
+<div class="footer">
+    📌 Application développée par MADJOU FORTUNE NESLINE (24G2876)<br>
+    Programme INF232 EC2 - Analyse des IST, prévention et protection
+</div>
+""", unsafe_allow_html=True)
