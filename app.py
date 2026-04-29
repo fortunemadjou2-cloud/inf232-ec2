@@ -637,4 +637,4 @@ with tab5:
         - Identifiez à quel groupe vous ressemblez pour mieux cibler vos besoins
         """)
     else:
-        st.warning(f"⚠️ Besoin d'au moins 5 participants. Actuellement : {len(df_
+        st.warning(f"⚠️ Besoin d'au moins 5 participants. Actuellement : {len(df_clean)} participants.")
