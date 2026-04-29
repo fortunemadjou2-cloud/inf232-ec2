@@ -23,27 +23,229 @@ st.set_page_config(
 # ==================== STYLE CSS ====================
 st.markdown("""
 <style>
-    .banner {
-        background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 50%, #4caf50 100%);
-        padding: 25px;
-        border-radius: 20px;
-        text-align: center;
-        margin-bottom: 30px;
-        color: white;
+/* ==================== NEXHEALTH DESIGN SYSTEM ==================== */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap');
+
+/* Reset Streamlit defaults */
+.stApp {
+    background-color: #f7fbf0 !important;
+}
+
+/* Main container */
+.main .block-container {
+    padding-top: 1rem;
+    padding-bottom: 4rem;
+    max-width: 1200px;
+}
+
+/* Typography */
+h1, h2, h3, h4, p, .stMarkdown {
+    font-family: 'Manrope', sans-serif !important;
+}
+
+/* ==================== BANNIÈRE ==================== */
+.nexhealth-banner {
+    background: linear-gradient(90deg, #1b5e20 0%, #2e7d32 100%);
+    border-radius: 24px;
+    padding: 40px;
+    margin-bottom: 32px;
+    color: white;
+    box-shadow: 0 10px 30px rgba(27, 94, 32, 0.15);
+}
+
+/* ==================== CARTES MENU (4 carrés) ==================== */
+.menu-card {
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: 1px solid #e0e4da;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    cursor: pointer;
+}
+
+.menu-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(27, 94, 32, 0.1);
+    border-color: #2e7d32;
+}
+
+.menu-card-selected {
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    border: 2px solid #2e7d32;
+}
+
+.menu-icon {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+}
+
+.menu-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1b5e20;
+    margin: 0;
+    line-height: 1.3;
+}
+
+/* ==================== BOUTONS STREAMLIT ==================== */
+.stButton > button {
+    background-color: #2e7d32 !important;
+    color: white !important;
+    border-radius: 40px !important;
+    padding: 10px 20px !important;
+    font-weight: 600 !important;
+    font-family: 'Manrope', sans-serif !important;
+    border: none !important;
+    transition: all 0.2s ease !important;
+}
+
+.stButton > button:hover {
+    background-color: #1b5e20 !important;
+    transform: scale(1.02);
+}
+
+/* Bouton secondaire */
+.stButton > button[kind="secondary"] {
+    background-color: transparent !important;
+    color: #2e7d32 !important;
+    border: 1px solid #2e7d32 !important;
+}
+
+.stButton > button[kind="secondary"]:hover {
+    background-color: #e8f5e9 !important;
+}
+
+/* ==================== CARTES ANALYSES ==================== */
+.analysis-card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    padding: 24px;
+    border: 1px solid rgba(46, 125, 50, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+}
+
+/* ==================== FORMULAIRES ==================== */
+.stTextInput > div > div > input, 
+.stSelectbox > div > div, 
+.stTextArea > div > div > textarea {
+    border-radius: 12px !important;
+    border: 1px solid #e0e4da !important;
+    font-family: 'Manrope', sans-serif !important;
+}
+
+.stRadio > div {
+    gap: 16px !important;
+}
+
+/* ==================== MESSAGES D'ALERTE ==================== */
+.stAlert {
+    border-radius: 16px !important;
+    border-left: 5px solid #2e7d32 !important;
+}
+
+div[data-baseweb="notification"] {
+    border-radius: 16px !important;
+}
+
+/* Messages de succès personnalisés */
+.success-message {
+    background-color: #e8f5e9;
+    border-left: 5px solid #2e7d32;
+    color: #1b5e20;
+    padding: 16px;
+    border-radius: 12px;
+    margin: 16px 0;
+    font-family: 'Manrope', sans-serif;
+}
+
+/* ==================== EXPANDER (accordeon) ==================== */
+.streamlit-expanderHeader {
+    background-color: #f1f5eb;
+    border-radius: 12px !important;
+    font-weight: 600;
+    color: #1b5e20;
+}
+
+.streamlit-expanderContent {
+    background-color: white;
+    border-radius: 0 0 12px 12px;
+    padding: 16px;
+}
+
+/* ==================== FOOTER ==================== */
+.nexhealth-footer {
+    text-align: center;
+    padding: 20px;
+    margin-top: 48px;
+    background: linear-gradient(90deg, #1b5e20, #2e7d32);
+    color: white;
+    border-radius: 16px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* ==================== METRIC CARDS ==================== */
+div[data-testid="stMetric"] {
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border: 1px solid #e0e4da;
+}
+
+div[data-testid="stMetric"] label {
+    color: #1b5e20 !important;
+    font-weight: 600 !important;
+}
+
+/* ==================== TABS ==================== */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 8px;
+    background-color: #f1f5eb;
+    padding: 6px;
+    border-radius: 40px;
+}
+
+.stTabs [data-baseweb="tab"] {
+    border-radius: 32px !important;
+    padding: 8px 20px !important;
+    font-family: 'Manrope', sans-serif !important;
+    font-weight: 600 !important;
+}
+
+.stTabs [aria-selected="true"] {
+    background-color: #2e7d32 !important;
+    color: white !important;
+}
+
+/* ==================== GRAPHIQUES PLOTLY ==================== */
+.js-plotly-plot {
+    border-radius: 16px;
+    background: white;
+    padding: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* ==================== SIDEBAR (si utilisé) ==================== */
+section[data-testid="stSidebar"] {
+    background-color: #f7fbf0;
+    border-right: 1px solid #e0e4da;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 768px) {
+    .nexhealth-banner {
+        padding: 24px;
     }
-    .banner h1 { font-size: 2.2rem; font-weight: bold; font-style: italic; margin: 0; }
-    .banner p { font-size: 1rem; font-weight: bold; font-style: italic; margin: 8px 0 0 0; }
-    .banner-sub { font-size: 0.9rem; margin: 3px 0; }
-    .footer {
-        text-align: center;
-        padding: 15px;
-        margin-top: 40px;
-        background: linear-gradient(135deg, #1b5e20, #2e7d32);
-        color: white;
-        border-radius: 15px;
-        font-weight: bold;
-        font-size: 0.8rem;
+    .stButton > button {
+        width: 100%;
     }
+}
 </style>
 """, unsafe_allow_html=True)
 
