@@ -11,6 +11,7 @@ from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import r2_score
+from sklearn.model_selection import cross_val_score
 
 # ==================== CONFIGURATION ====================
 st.set_page_config(
@@ -41,7 +42,6 @@ st.markdown("""
         color: #ffffff !important;
     }
     
-    /* Mode selector */
     .mode-selector {
         margin-bottom: 20px;
         padding: 15px;
@@ -149,8 +149,6 @@ if 'page' not in st.session_state:
     st.session_state.page = "ajouter"
 if 'mode' not in st.session_state:
     st.session_state.mode = "demo"
-if 'predict_trigger' not in st.session_state:
-    st.session_state.predict_trigger = False
 
 # ==================== MODE SELECTOR ====================
 mode_col1, mode_col2, mode_col3 = st.columns([1, 2, 1])
@@ -283,7 +281,6 @@ def get_demo_data():
 # ==================== CHARGEMENT DES DONNÉES ====================
 if st.session_state.mode == "demo":
     df = get_demo_data()
-    st.info("ℹ️ **Mode Démo actif** : Les données affichées sont des exemples fictifs. Aucune modification n'est sauvegardée.")
 else:
     df = charger_participants()
 
@@ -449,7 +446,7 @@ elif st.session_state.page == "analyses":
     if len(df) < 3:
         st.warning(f"⚠️ Besoin d'au moins 3 participants pour les analyses. Actuellement : {len(df)} participant(s).")
     else:
-        # ==================== CONVERSION DES DONNÉES ====================
+        # CONVERSION DES DONNÉES
         df['Age'] = pd.to_numeric(df['age'], errors='coerce')
         df['Connaissance_num'] = df['connaissance_ist'].map({
             'Très mauvaise': 1, 'Mauvaise': 2, 'Moyenne': 3, 'Bonne': 4, 'Très bonne': 5
@@ -480,10 +477,10 @@ elif st.session_state.page == "analyses":
         else:
             # Score de risque
             df_clean['Score_Risque'] = (
-                (6 - df_clean['Preservatifs_num']) * 2 +  # Moins de préservatifs = risque
-                df_clean['Partenaires_num'] * 1.5 +       # Plus de partenaires = risque
-                df_clean['Rapport_non_protege_num'] * 2 +  # Rapports non protégés = risque
-                df_clean['Alcool_num'] * 0.5              # Alcool = risque
+                (6 - df_clean['Preservatifs_num']) * 2 +
+                df_clean['Partenaires_num'] * 1.5 +
+                df_clean['Rapport_non_protege_num'] * 2 +
+                df_clean['Alcool_num'] * 0.5
             )
             df_clean['Categorie_Risque'] = df_clean['Score_Risque'].apply(
                 lambda x: 'Faible' if x <= 8 else ('Modéré' if x <= 15 else 'Élevé'))
@@ -493,12 +490,10 @@ elif st.session_state.page == "analyses":
                 "🏷️ Classification", "🔄 Clustering", "📊 Graphiques"
             ])
             
-            # ---------- TAB 1 : RÉGRESSION SIMPLE ----------
+            # REGRESSION SIMPLE
             with tab1:
                 st.subheader("📈 Relation entre l'âge et la connaissance des IST")
-                st.markdown("**Objectif :** Vérifier si l'âge influence le niveau de connaissance des IST.")
                 st.caption("📊 Analyse basée sur les données enregistrées dans l'application")
-                
                 if len(df_clean) >= 3:
                     X = df_clean[['Age']].values
                     y = df_clean['Connaissance_num'].values
@@ -536,12 +531,10 @@ elif st.session_state.page == "analyses":
                 else:
                     st.warning("Ajoutez au moins 3 participants pour cette analyse.")
             
-            # ---------- TAB 2 : RÉGRESSION MULTIPLE ----------
+            # REGRESSION MULTIPLE
             with tab2:
                 st.subheader("🔬 Facteurs influençant la connaissance des IST")
-                st.markdown("**Objectif :** Identifier quels comportements sont liés à une meilleure connaissance.")
                 st.caption("📊 Analyse basée sur les données enregistrées dans l'application")
-                
                 if len(df_clean) >= 4:
                     X = df_clean[['Age', 'Preservatifs_num', 'Partenaires_num', 'Campagnes_num']].values
                     y = df_clean['Connaissance_num'].values
@@ -563,11 +556,10 @@ elif st.session_state.page == "analyses":
                 else:
                     st.warning("Ajoutez au moins 4 participants pour cette analyse.")
             
-            # ---------- TAB 3 : PCA ----------
+            # PCA
             with tab3:
                 st.subheader("🎯 Visualisation des profils (PCA)")
                 st.caption("📊 Analyse basée sur les données enregistrées dans l'application")
-                
                 if len(df_clean) >= 4:
                     features = ['Age', 'Connaissance_num', 'Preservatifs_num', 'Partenaires_num', 'Campagnes_num']
                     scaler = StandardScaler()
@@ -589,7 +581,7 @@ elif st.session_state.page == "analyses":
                 else:
                     st.warning("Ajoutez au moins 4 participants pour cette analyse.")
             
-            # ---------- TAB 4 : CLASSIFICATION (PRÉDICTION AMÉLIORÉE) ----------
+            # CLASSIFICATION
             with tab4:
                 st.subheader("🏷️ Évaluez votre risque de contracter une IST")
                 st.markdown("""
@@ -600,7 +592,6 @@ elif st.session_state.page == "analyses":
                 """.format(len(df_clean)))
                 
                 if len(df_clean) >= 5:
-                    # Création du modèle de prédiction
                     df_clean['Cible'] = (df_clean['Categorie_Risque'] == 'Élevé').astype(int)
                     X = df_clean[['Age', 'Preservatifs_num', 'Partenaires_num', 'Campagnes_num', 
                                   'Rapport_non_protege_num', 'Alcool_num', 'Connaissance_num']].values
@@ -609,9 +600,23 @@ elif st.session_state.page == "analyses":
                     rf = RandomForestClassifier(n_estimators=100, random_state=42, max_depth=5)
                     rf.fit(X, y)
                     
-                    # Affichage de l'importance des variables
                     importance_df = pd.DataFrame({
-                        'Facteur': ['Âge', 'Préservatifs', 'Partenaires', 'Campagnes', 
-                                   'Rapports non protégés', 'Alcool', 'Connaissance'],
+                        'Facteur': ['Âge', 'Préservatifs', 'Partenaires', 'Campagnes', 'Rapports non protégés', 'Alcool', 'Connaissance'],
                         'Importance': rf.feature_importances_,
-                       
+                        'Pourcentage (%)': (rf.feature_importances_ * 100).round(1)
+                    }).sort_values('Importance', ascending=False)
+                    
+                    st.dataframe(importance_df, use_container_width=True)
+                    
+                    fig_imp = px.bar(importance_df, x='Importance', y='Facteur', orientation='h',
+                                    title="📊 Facteurs influençant le risque IST",
+                                    text='Pourcentage (%)', color='Importance',
+                                    color_continuous_scale='Greens')
+                    fig_imp.update_traces(texttemplate='%{text}%', textposition='outside')
+                    st.plotly_chart(fig_imp, use_container_width=True)
+                    
+                    st.subheader("🔮 Testez VOTRE niveau de risque")
+                    
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        age_t = st.slider("📍 Votre âge", 18, 65, 25, key="
