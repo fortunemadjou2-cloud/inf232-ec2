@@ -20,242 +20,160 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# ==================== STYLE CSS ====================
+# ==================== STYLE CSS ADAPTÉ (clair & sombre) ====================
 st.markdown("""
 <style>
-/* ==================== NEXHEALTH DESIGN SYSTEM ==================== */
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap');
-
-/* Reset Streamlit defaults */
-.stApp {
-    background-color: #f7fbf0 !important;
-}
-
-/* Main container */
-.main .block-container {
-    padding-top: 1rem;
-    padding-bottom: 4rem;
-    max-width: 1200px;
-}
-
-/* Typography */
-h1, h2, h3, h4, p, .stMarkdown {
-    font-family: 'Manrope', sans-serif !important;
-}
-
-/* ==================== BANNIÈRE ==================== */
-.nexhealth-banner {
-    background: linear-gradient(90deg, #1b5e20 0%, #2e7d32 100%);
-    border-radius: 24px;
-    padding: 40px;
-    margin-bottom: 32px;
-    color: white;
-    box-shadow: 0 10px 30px rgba(27, 94, 32, 0.15);
-}
-
-/* ==================== CARTES MENU (4 carrés) ==================== */
-.menu-card {
-    background: white;
-    border-radius: 20px;
-    padding: 24px;
-    text-align: center;
-    transition: all 0.3s ease;
-    border: 1px solid #e0e4da;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    cursor: pointer;
-}
-
-.menu-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(27, 94, 32, 0.1);
-    border-color: #2e7d32;
-}
-
-.menu-card-selected {
-    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-    border: 2px solid #2e7d32;
-}
-
-.menu-icon {
-    font-size: 2.5rem;
-    margin-bottom: 12px;
-}
-
-.menu-title {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #1b5e20;
-    margin: 0;
-    line-height: 1.3;
-}
-
-/* ==================== BOUTONS STREAMLIT ==================== */
-.stButton > button {
-    background-color: #2e7d32 !important;
-    color: white !important;
-    border-radius: 40px !important;
-    padding: 10px 20px !important;
-    font-weight: 600 !important;
-    font-family: 'Manrope', sans-serif !important;
-    border: none !important;
-    transition: all 0.2s ease !important;
-}
-
-.stButton > button:hover {
-    background-color: #1b5e20 !important;
-    transform: scale(1.02);
-}
-
-/* Bouton secondaire */
-.stButton > button[kind="secondary"] {
-    background-color: transparent !important;
-    color: #2e7d32 !important;
-    border: 1px solid #2e7d32 !important;
-}
-
-.stButton > button[kind="secondary"]:hover {
-    background-color: #e8f5e9 !important;
-}
-
-/* ==================== CARTES ANALYSES ==================== */
-.analysis-card {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(10px);
-    border-radius: 24px;
-    padding: 24px;
-    border: 1px solid rgba(46, 125, 50, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-    margin-bottom: 20px;
-}
-
-/* ==================== FORMULAIRES ==================== */
-.stTextInput > div > div > input, 
-.stSelectbox > div > div, 
-.stTextArea > div > div > textarea {
-    border-radius: 12px !important;
-    border: 1px solid #e0e4da !important;
-    font-family: 'Manrope', sans-serif !important;
-}
-
-.stRadio > div {
-    gap: 16px !important;
-}
-
-/* ==================== MESSAGES D'ALERTE ==================== */
-.stAlert {
-    border-radius: 16px !important;
-    border-left: 5px solid #2e7d32 !important;
-}
-
-div[data-baseweb="notification"] {
-    border-radius: 16px !important;
-}
-
-/* Messages de succès personnalisés */
-.success-message {
-    background-color: #e8f5e9;
-    border-left: 5px solid #2e7d32;
-    color: #1b5e20;
-    padding: 16px;
-    border-radius: 12px;
-    margin: 16px 0;
-    font-family: 'Manrope', sans-serif;
-}
-
-/* ==================== EXPANDER (accordeon) ==================== */
-.streamlit-expanderHeader {
-    background-color: #f1f5eb;
-    border-radius: 12px !important;
-    font-weight: 600;
-    color: #1b5e20;
-}
-
-.streamlit-expanderContent {
-    background-color: white;
-    border-radius: 0 0 12px 12px;
-    padding: 16px;
-}
-
-/* ==================== FOOTER ==================== */
-.nexhealth-footer {
-    text-align: center;
-    padding: 20px;
-    margin-top: 48px;
-    background: linear-gradient(90deg, #1b5e20, #2e7d32);
-    color: white;
-    border-radius: 16px;
-    font-family: 'Manrope', sans-serif;
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-
-/* ==================== METRIC CARDS ==================== */
-div[data-testid="stMetric"] {
-    background: white;
-    border-radius: 16px;
-    padding: 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    border: 1px solid #e0e4da;
-}
-
-div[data-testid="stMetric"] label {
-    color: #1b5e20 !important;
-    font-weight: 600 !important;
-}
-
-/* ==================== TABS ==================== */
-.stTabs [data-baseweb="tab-list"] {
-    gap: 8px;
-    background-color: #f1f5eb;
-    padding: 6px;
-    border-radius: 40px;
-}
-
-.stTabs [data-baseweb="tab"] {
-    border-radius: 32px !important;
-    padding: 8px 20px !important;
-    font-family: 'Manrope', sans-serif !important;
-    font-weight: 600 !important;
-}
-
-.stTabs [aria-selected="true"] {
-    background-color: #2e7d32 !important;
-    color: white !important;
-}
-
-/* ==================== GRAPHIQUES PLOTLY ==================== */
-.js-plotly-plot {
-    border-radius: 16px;
-    background: white;
-    padding: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
-/* ==================== SIDEBAR (si utilisé) ==================== */
-section[data-testid="stSidebar"] {
-    background-color: #f7fbf0;
-    border-right: 1px solid #e0e4da;
-}
-
-/* ==================== RESPONSIVE ==================== */
-@media (max-width: 768px) {
+    /* Import police */
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap');
+    
+    /* Styles généraux */
+    .stApp, .main, .block-container {
+        font-family: 'Manrope', sans-serif !important;
+    }
+    
+    /* Bannière - fonctionne en clair et sombre */
     .nexhealth-banner {
+        background: linear-gradient(90deg, #1b5e20 0%, #2e7d32 100%);
+        border-radius: 24px;
+        padding: 40px;
+        margin-bottom: 32px;
+        color: #ffffff !important;
+        box-shadow: 0 10px 30px rgba(27, 94, 32, 0.15);
+    }
+    .nexhealth-banner h1, .nexhealth-banner p, .nexhealth-banner .banner-sub {
+        color: #ffffff !important;
+    }
+    
+    /* Cartes menu */
+    .menu-card {
+        background: var(--background-color, #ffffff);
+        border-radius: 20px;
         padding: 24px;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: 1px solid #e0e4da;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        cursor: pointer;
     }
+    .menu-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(27, 94, 32, 0.1);
+        border-color: #2e7d32;
+    }
+    .menu-card-selected {
+        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        border: 2px solid #2e7d32;
+    }
+    .menu-icon {
+        font-size: 2.5rem;
+        margin-bottom: 12px;
+    }
+    .menu-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1b5e20;
+        margin: 0;
+        line-height: 1.3;
+    }
+    
+    /* Boutons */
     .stButton > button {
-        width: 100%;
+        background-color: #2e7d32 !important;
+        color: white !important;
+        border-radius: 40px !important;
+        padding: 10px 20px !important;
+        font-weight: 600 !important;
+        font-family: 'Manrope', sans-serif !important;
+        border: none !important;
+        transition: all 0.2s ease !important;
     }
-}
+    .stButton > button:hover {
+        background-color: #1b5e20 !important;
+        transform: scale(1.02);
+    }
+    .stButton > button[kind="secondary"] {
+        background-color: transparent !important;
+        color: #2e7d32 !important;
+        border: 1px solid #2e7d32 !important;
+    }
+    
+    /* Messages d'alerte */
+    .stAlert {
+        border-radius: 16px !important;
+        border-left: 5px solid #2e7d32 !important;
+    }
+    
+    /* Expander */
+    .streamlit-expanderHeader {
+        background-color: #f1f5eb;
+        border-radius: 12px !important;
+        font-weight: 600;
+        color: #1b5e20;
+    }
+    
+    /* Footer */
+    .nexhealth-footer {
+        text-align: center;
+        padding: 20px;
+        margin-top: 48px;
+        background: linear-gradient(90deg, #1b5e20, #2e7d32);
+        color: white;
+        border-radius: 16px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    /* Tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background-color: #f1f5eb;
+        padding: 6px;
+        border-radius: 40px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        border-radius: 32px !important;
+        padding: 8px 20px !important;
+        font-weight: 600 !important;
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: #2e7d32 !important;
+        color: white !important;
+    }
+    
+    /* Métriques */
+    div[data-testid="stMetric"] {
+        background: var(--background-color, #ffffff);
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        border: 1px solid #e0e4da;
+    }
+    div[data-testid="stMetric"] label {
+        color: #1b5e20 !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Dataframe */
+    .stDataFrame {
+        border-radius: 16px;
+        overflow: hidden;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .nexhealth-banner { padding: 24px; }
+        .stButton > button { width: 100%; }
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # ==================== BANNIÈRE ====================
 st.markdown("""
-<div class="banner">
-    <h1>🫂🩺 NEXHEALTH SURVEY NO TABOO</h1>
-    <p>✨ Parce qu'en santé, il n'y a pas de tabou. ✨</p>
-    <div class="banner-sub">🔍 Brisons le silence sur les IST, protégeons notre bien-être.</div>
-    <div class="banner-sub">⚖️ La santé sexuelle est un droit, la protection est une responsabilité.</div>
+<div class="nexhealth-banner">
+    <h1 style="margin:0; font-size:2rem;">🫂🩺 NEXHEALTH SURVEY NO TABOO</h1>
+    <p style="margin:10px 0 0 0; font-style:italic;">✨ Parce qu'en santé, il n'y a pas de tabou. ✨</p>
+    <p style="margin:5px 0 0 0; font-size:0.9rem;">🔍 Brisons le silence sur les IST, protégeons notre bien-être.</p>
+    <p style="margin:5px 0 0 0; font-size:0.9rem;">⚖️ La santé sexuelle est un droit, la protection est une responsabilité.</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -268,13 +186,14 @@ def init_database():
     c.execute('''
         CREATE TABLE IF NOT EXISTS participants (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            date TEXT, age INTEGER, sexe TEXT, pays TEXT, profession TEXT, niveau_etude TEXT,
-            partenaires_sexuels TEXT, utilisation_preservatifs TEXT, nb_partenaires TEXT,
-            rapport_non_protege TEXT, alcool_substances TEXT, connaissance_ist TEXT,
-            ist_connues TEXT, connaissance_asymptomatique TEXT, deja_depiste TEXT,
-            savoir_depistage_gratuit TEXT, frequence_depistage TEXT, moyens_prevention TEXT,
-            participation_campagnes TEXT, influence_reseaux_sociaux TEXT,
-            ist_diagnostiquee TEXT, vaccin_hpv TEXT, consultation_medecin TEXT
+            date TEXT, age INTEGER, sexe TEXT, pays TEXT, profession TEXT,
+            niveau_etude TEXT, partenaires_sexuels TEXT, utilisation_preservatifs TEXT,
+            nb_partenaires TEXT, rapport_non_protege TEXT, alcool_substances TEXT,
+            connaissance_ist TEXT, ist_connues TEXT, connaissance_asymptomatique TEXT,
+            deja_depiste TEXT, savoir_depistage_gratuit TEXT, frequence_depistage TEXT,
+            moyens_prevention TEXT, participation_campagnes TEXT,
+            influence_reseaux_sociaux TEXT, ist_diagnostiquee TEXT, vaccin_hpv TEXT,
+            consultation_medecin TEXT
         )
     ''')
     conn.commit()
@@ -457,7 +376,7 @@ elif st.session_state.page == "participants":
                 st.success("Toutes les données ont été supprimées !")
                 st.rerun()
 
-# ==================== PAGE 3 : ANALYSES AVANCÉES ====================
+# ==================== PAGE 3 : ANALYSES AVANCÉES (CORRIGÉE) ====================
 elif st.session_state.page == "analyses":
     st.header("📈🔬 Analyses avancées des données")
     df = charger_participants()
@@ -465,99 +384,140 @@ elif st.session_state.page == "analyses":
     if len(df) < 3:
         st.warning(f"⚠️ Besoin d'au moins 3 participants pour les analyses. Actuellement : {len(df)} participant(s).")
     else:
+        # Nettoyage et conversion des données
         df['Age'] = pd.to_numeric(df['age'], errors='coerce')
-        df['Connaissance_num'] = df['connaissance_ist'].map({'Très mauvaise':1, 'Mauvaise':2, 'Moyenne':3, 'Bonne':4, 'Très bonne':5})
-        df['Preservatifs_num'] = df['utilisation_preservatifs'].map({'Jamais':1, 'Rarement':2, 'Parfois':3, 'Souvent':4, 'Systématiquement':5, 'Pas concerné(e)':3})
-        df['Campagnes_num'] = df['participation_campagnes'].map({'Jamais':1, 'Rarement':2, 'Parfois':3, 'Souvent':4, 'Très souvent':5})
-        df['Partenaires_num'] = df['nb_partenaires'].map({'1':1, '2-5':2, '6-10':3, '11-20':4, '20+':5})
+        df['Connaissance_num'] = df['connaissance_ist'].map({
+            'Très mauvaise': 1, 'Mauvaise': 2, 'Moyenne': 3, 'Bonne': 4, 'Très bonne': 5
+        })
+        df['Preservatifs_num'] = df['utilisation_preservatifs'].map({
+            'Jamais': 1, 'Rarement': 2, 'Parfois': 3, 'Souvent': 4, 'Systématiquement': 5, 'Pas concerné(e)': 3
+        })
+        df['Campagnes_num'] = df['participation_campagnes'].map({
+            'Jamais': 1, 'Rarement': 2, 'Parfois': 3, 'Souvent': 4, 'Très souvent': 5
+        })
+        df['Partenaires_num'] = df['nb_partenaires'].map({
+            '1': 1, '2-5': 2, '6-10': 3, '11-20': 4, '20+': 5
+        })
         
-        df_clean = df.dropna(subset=['Age', 'Connaissance_num', 'Preservatifs_num'])
-        df_clean['Score_Risque'] = (6 - df_clean['Preservatifs_num']) * 2 + df_clean['Partenaires_num'] * 1.5
-        df_clean['Categorie_Risque'] = df_clean['Score_Risque'].apply(lambda x: 'Faible' if x <= 8 else ('Modéré' if x <= 15 else 'Élevé'))
+        # Supprimer les lignes avec des valeurs manquantes
+        df_clean = df.dropna(subset=['Age', 'Connaissance_num', 'Preservatifs_num', 'Campagnes_num', 'Partenaires_num'])
         
-        tab1, tab2, tab3, tab4, tab5 = st.tabs([
-            "📈 Régression simple", "🔬 Régression multiple", "🎯 PCA", "🏷️ Classification", "🔄 Clustering"
-        ])
-        
-        with tab1:
-            if len(df_clean) >= 3:
-                X = df_clean[['Age']].values
-                y = df_clean['Connaissance_num'].values
-                modele = LinearRegression().fit(X, y)
-                fig = px.scatter(df_clean, x='Age', y='Connaissance_num', 
-                                 title="Âge vs Connaissance des IST",
-                                 color='Categorie_Risque', hover_data=['profession'])
-                x_range = np.linspace(df_clean['Age'].min(), df_clean['Age'].max(), 100)
-                y_pred = modele.predict(x_range.reshape(-1, 1))
-                fig.add_trace(go.Scatter(x=x_range, y=y_pred, mode='lines', 
-                                        name='Tendance', line=dict(color='#2e7d32', width=3)))
-                st.plotly_chart(fig, use_container_width=True)
-                st.metric("R²", f"{r2_score(y, modele.predict(X)):.3f}")
-        
-        with tab2:
-            if len(df_clean) >= 5:
-                X = df_clean[['Age', 'Preservatifs_num', 'Partenaires_num', 'Campagnes_num']].values
-                y = df_clean['Connaissance_num'].values
-                modele = LinearRegression().fit(X, y)
-                st.dataframe(pd.DataFrame({'Facteur': ['Âge', 'Préservatifs', 'Partenaires', 'Campagnes'],
-                                           'Coefficient': modele.coef_}))
-                predictions = modele.predict(X)
-                fig = px.scatter(x=y, y=predictions, title="Prédictions vs Réalité")
-                fig.add_trace(go.Scatter(x=[1,5], y=[1,5], mode='lines', 
-                                        name='Parfait', line=dict(dash='dash', color='#2e7d32')))
-                st.plotly_chart(fig, use_container_width=True)
-                st.metric("R²", f"{r2_score(y, predictions):.3f}")
-        
-        with tab3:
-            if len(df_clean) >= 4:
-                features = ['Age', 'Connaissance_num', 'Preservatifs_num', 'Partenaires_num']
-                scaler = StandardScaler()
-                X_scaled = scaler.fit_transform(df_clean[features])
-                pca = PCA(n_components=2)
-                result = pca.fit_transform(X_scaled)
-                df_viz = pd.DataFrame({'PC1': result[:,0], 'PC2': result[:,1], 'Risque': df_clean['Categorie_Risque']})
-                fig = px.scatter(df_viz, x='PC1', y='PC2', color='Risque', title="PCA")
-                st.plotly_chart(fig, use_container_width=True)
-        
-        with tab4:
-            if len(df_clean) >= 6:
-                df_clean['Cible'] = (df_clean['Categorie_Risque'] == 'Élevé').astype(int)
-                X = df_clean[['Age', 'Preservatifs_num', 'Partenaires_num', 'Campagnes_num']].values
-                y = df_clean['Cible'].values
-                rf = RandomForestClassifier(n_estimators=100, random_state=42).fit(X, y)
-                importance = pd.DataFrame({'Facteur': ['Âge', 'Préservatifs', 'Partenaires', 'Campagnes'],
-                                          'Importance %': (rf.feature_importances_ * 100).round(1)})
-                st.dataframe(importance)
-                
-                st.subheader("🔮 Testez votre risque")
-                col1, col2 = st.columns(2)
-                with col1:
-                    age_t = st.slider("Âge", 18, 65, 25, key="risk_age")
-                    preserv_t = st.select_slider("Préservatifs", 
-                        options=["Systématiquement", "Souvent", "Parfois", "Rarement", "Jamais"], key="risk_preserv")
-                with col2:
-                    partenaires_t = st.select_slider("Partenaires", options=["1", "2-5", "6-10", "11-20", "20+"], key="risk_part")
-                
-                if st.button("Estimer mon risque", key="predict_risk"):
-                    p_map = {"Systématiquement":5, "Souvent":4, "Parfois":3, "Rarement":2, "Jamais":1}
-                    k_map = {"1":1, "2-5":2, "6-10":3, "11-20":4, "20+":5}
-                    pred = rf.predict([[age_t, p_map[preserv_t], k_map[partenaires_t], 3]])[0]
-                    if pred == 1:
-                        st.error("⚠️ Risque ÉLEVÉ - Consultez la rubrique Prévention")
-                    else:
-                        st.success("✅ Risque FAIBLE à MODÉRÉ")
-        
-        with tab5:
-            if len(df_clean) >= 5:
-                X = df_clean[['Age', 'Connaissance_num', 'Preservatifs_num']].values
-                scaler = StandardScaler()
-                X_scaled = scaler.fit_transform(X)
-                k = st.slider("Nombre de segments", 2, 4, 3)
-                kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
-                clusters = kmeans.fit_predict(X_scaled)
-                fig = px.scatter(df_clean, x='Age', y='Connaissance_num', 
-                                 color=clusters.astype(str), title=f"Segmentation en {k} groupes")
-                st.plotly_chart(fig, use_container_width=True)
+        if len(df_clean) < 3:
+            st.warning("Pas assez de données numériques valides pour les analyses.")
+        else:
+            # Score de risque
+            df_clean['Score_Risque'] = (6 - df_clean['Preservatifs_num']) * 2 + df_clean['Partenaires_num'] * 1.5
+            df_clean['Categorie_Risque'] = df_clean['Score_Risque'].apply(
+                lambda x: 'Faible' if x <= 8 else ('Modéré' if x <= 15 else 'Élevé'))
+            
+            tab1, tab2, tab3, tab4, tab5 = st.tabs([
+                "📈 Régression simple", "🔬 Régression multiple", "🎯 PCA", "🏷️ Classification", "🔄 Clustering"
+            ])
+            
+            with tab1:
+                if len(df_clean) >= 3:
+                    X = df_clean[['Age']].values
+                    y = df_clean['Connaissance_num'].values
+                    modele = LinearRegression().fit(X, y)
+                    fig = px.scatter(df_clean, x='Age', y='Connaissance_num', 
+                                     title="Âge vs Connaissance des IST",
+                                     color='Categorie_Risque', hover_data=['profession'])
+                    x_range = np.linspace(df_clean['Age'].min(), df_clean['Age'].max(), 100)
+                    y_pred = modele.predict(x_range.reshape(-1, 1))
+                    fig.add_trace(go.Scatter(x=x_range, y=y_pred, mode='lines', 
+                                            name='Tendance', line=dict(color='#2e7d32', width=3)))
+                    st.plotly_chart(fig, use_container_width=True)
+                    st.metric("R²", f"{r2_score(y, modele.predict(X)):.3f}")
+                    st.info("📖 Plus le R² est proche de 1, plus l'âge explique les différences de connaissance.")
+                else:
+                    st.warning("Pas assez de données pour la régression simple.")
+            
+            with tab2:
+                if len(df_clean) >= 4:
+                    X = df_clean[['Age', 'Preservatifs_num', 'Partenaires_num']].values
+                    y = df_clean['Connaissance_num'].values
+                    modele = LinearRegression().fit(X, y)
+                    st.dataframe(pd.DataFrame({
+                        'Facteur': ['Âge', 'Préservatifs', 'Partenaires'],
+                        'Coefficient': modele.coef_
+                    }))
+                    predictions = modele.predict(X)
+                    fig = px.scatter(x=y, y=predictions, title="Prédictions vs Réalité")
+                    fig.add_trace(go.Scatter(x=[1,5], y=[1,5], mode='lines', 
+                                            name='Parfait', line=dict(dash='dash', color='#2e7d32')))
+                    st.plotly_chart(fig, use_container_width=True)
+                    st.metric("R²", f"{r2_score(y, predictions):.3f}")
+                else:
+                    st.warning("Pas assez de données pour la régression multiple.")
+            
+            with tab3:
+                if len(df_clean) >= 4:
+                    features = ['Age', 'Connaissance_num', 'Preservatifs_num', 'Partenaires_num']
+                    scaler = StandardScaler()
+                    X_scaled = scaler.fit_transform(df_clean[features])
+                    pca = PCA(n_components=2)
+                    result = pca.fit_transform(X_scaled)
+                    df_viz = pd.DataFrame({
+                        'PC1': result[:,0], 'PC2': result[:,1],
+                        'Risque': df_clean['Categorie_Risque']
+                    })
+                    fig = px.scatter(df_viz, x='PC1', y='PC2', color='Risque', title="Projection PCA")
+                    fig.update_layout(
+                        xaxis_title=f"PC1 ({pca.explained_variance_ratio_[0]*100:.1f}%)",
+                        yaxis_title=f"PC2 ({pca.explained_variance_ratio_[1]*100:.1f}%)"
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+                    st.info("📖 Les points proches ont des profils similaires.")
+                else:
+                    st.warning("Pas assez de données pour la PCA.")
+            
+            with tab4:
+                if len(df_clean) >= 5:
+                    df_clean['Cible'] = (df_clean['Categorie_Risque'] == 'Élevé').astype(int)
+                    X = df_clean[['Age', 'Preservatifs_num', 'Partenaires_num']].values
+                    y = df_clean['Cible'].values
+                    rf = RandomForestClassifier(n_estimators=100, random_state=42).fit(X, y)
+                    
+                    importance = pd.DataFrame({
+                        'Facteur': ['Âge', 'Préservatifs', 'Partenaires'],
+                        'Importance %': (rf.feature_importances_ * 100).round(1)
+                    })
+                    st.dataframe(importance)
+                    
+                    st.subheader("🔮 Testez votre risque")
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        age_t = st.slider("Âge", 18, 65, 25, key="risk_age")
+                        preserv_t = st.select_slider("Préservatifs", 
+                            options=["Systématiquement", "Souvent", "Parfois", "Rarement", "Jamais"], key="risk_preserv")
+                    with col2:
+                        partenaires_t = st.select_slider("Partenaires", options=["1", "2-5", "6-10", "11-20", "20+"], key="risk_part")
+                    
+                    if st.button("Estimer mon risque", key="predict_risk"):
+                        p_map = {"Systématiquement":5, "Souvent":4, "Parfois":3, "Rarement":2, "Jamais":1}
+                        k_map = {"1":1, "2-5":2, "6-10":3, "11-20":4, "20+":5}
+                        pred = rf.predict([[age_t, p_map[preserv_t], k_map[partenaires_t]]])[0]
+                        if pred == 1:
+                            st.error("⚠️ Risque ÉLEVÉ - Consultez la rubrique Prévention")
+                        else:
+                            st.success("✅ Risque FAIBLE à MODÉRÉ - Continuez les bonnes pratiques")
+                else:
+                    st.warning("Pas assez de données pour la classification.")
+            
+            with tab5:
+                if len(df_clean) >= 4:
+                    X = df_clean[['Age', 'Connaissance_num', 'Preservatifs_num']].values
+                    scaler = StandardScaler()
+                    X_scaled = scaler.fit_transform(X)
+                    k = st.slider("Nombre de segments", 2, 4, 3)
+                    kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
+                    clusters = kmeans.fit_predict(X_scaled)
+                    fig = px.scatter(df_clean, x='Age', y='Connaissance_num', 
+                                     color=clusters.astype(str), title=f"Segmentation en {k} groupes",
+                                     size='Preservatifs_num')
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    st.warning("Pas assez de données pour le clustering.")
 
 # ==================== PAGE 4 : PRÉVENTION ====================
 elif st.session_state.page == "prevention":
@@ -565,17 +525,18 @@ elif st.session_state.page == "prevention":
     
     with st.expander("📖 Qu'est-ce qu'une IST ?", expanded=True):
         st.markdown("""
-        Les IST (Infections Sexuellement Transmissibles) sont des infections qui se transmettent lors de rapports sexuels non protégés.
+        Les **IST (Infections Sexuellement Transmissibles)** sont des infections qui se transmettent lors de rapports sexuels non protégés.
         
-        **Points clés :**
-        - Certaines sont asymptomatiques
-        - Toutes peuvent avoir des conséquences graves
-        - La plupart sont évitables ou soignables
+        **Points clés à retenir :**
+        - Certaines IST sont **asymptomatiques** (pas de symptômes visibles)
+        - Toutes peuvent avoir des **conséquences graves** si non traitées
+        - La plupart sont **évitables** ou **soignables**
+        - Le **dépistage régulier** est le seul moyen d'être sûr de son statut
         """)
     
     with st.expander("🦠 Principales IST - Symptômes et conséquences"):
         st.markdown("""
-        **VIH / Sida :** Destruction du système immunitaire. Traitement antirétroviral.
+        **VIH / Sida :** Destruction du système immunitaire. Traitement antirétroviral (non guérit mais contrôle).
         
         **Syphilis :** Lésions cutanées, complications neurologiques. Se guérit avec antibiotiques.
         
@@ -583,27 +544,44 @@ elif st.session_state.page == "prevention":
         
         **Chlamydia :** Souvent asymptomatique. Peut rendre stérile.
         
-        **HPV :** Verrues génitales, cancers. Vaccination préventive.
+        **HPV (Papillomavirus) :** Verrues génitales, cancers. Vaccination préventive disponible.
+        
+        **Hépatite B :** Fatigue, jaunisse, risque de cancer du foie. Vaccination disponible.
         """)
     
-    with st.expander("🚨 Symptômes évocateurs"):
-        st.markdown("- Écoulements anormaux\n- Douleurs en urinant\n- Lésions ou verrues\n- Démangeaisons\n- Ganglions gonflés")
-        st.warning("⚠️ Dépistage régulier indispensable (certaines IST sont asymptomatiques)")
+    with st.expander("🚨 Symptômes évocateurs (Consultez rapidement)"):
+        st.markdown("""
+        - Écoulements anormaux (urètre, vagin, anus)
+        - Douleurs ou brûlures en urinant
+        - Lésions, boutons, ulcères ou verrues
+        - Démangeaisons intenses
+        - Ganglions gonflés dans l'aine
+        - Fièvre inexpliquée
+        """)
+        st.warning("⚠️ **Certaines IST sont asymptomatiques** → Dépistage régulier indispensable (2x par an)")
     
-    with st.expander("🛡️ Moyens de prévention"):
-        st.markdown("- Préservatifs (masculins et féminins)\n- Dépistage régulier (2x par an)\n- Vaccination HPV\n- Communication avec le/la partenaire")
+    with st.expander("🛡️ Moyens de prévention efficaces"):
+        st.markdown("""
+        - **Préservatifs masculins et féminins** (protection contre la plupart des IST)
+        - **Dépistage régulier** (au moins 2 fois par an si vie sexuelle active)
+        - **Vaccination** (HPV, Hépatite B)
+        - **Communication ouverte** avec le/la partenaire
+        - **Réduction du nombre de partenaires**
+        """)
     
     with st.expander("📍 Où se faire dépister ?"):
-        st.markdown("""
-        **Cameroun :** Hôpital Général Yaoundé, Hôpital Laquintinie Douala
-        **Sénégal :** Hôpital Fann Dakar, ALCS
-        **Côte d'Ivoire :** INHP Abidjan
-        """)
-        st.info("📢 Ces informations ne remplacent pas l'avis d'un médecin")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("**🇨🇲 Cameroun :** Hôpital Général de Yaoundé, Hôpital Laquintinie (Douala), Centres de santé communautaires")
+            st.markdown("**🇸🇳 Sénégal :** Hôpital de Fann (Dakar), ALCS (Association de Lutte contre le Sida)")
+        with col2:
+            st.markdown("**🇨🇮 Côte d'Ivoire :** INHP (Abidjan), Centre de santé de Treichville")
+            st.markdown("**🌍 Autres pays :** Hôpitaux publics, centres de santé de district, Croix-Rouge")
+        st.info("📢 *Ces informations ne remplacent pas l'avis d'un médecin. Consultez un professionnel de santé pour tout diagnostic.*")
 
 # ==================== FOOTER ====================
 st.markdown("""
-<div class="footer">
+<div class="nexhealth-footer">
     📌 MADJOU FORTUNE NESLINE (24G2876) - INF232 EC2 - Tous droits réservés
 </div>
 """, unsafe_allow_html=True)
