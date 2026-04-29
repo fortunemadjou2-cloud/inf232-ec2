@@ -22,12 +22,42 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ==================== STYLE CSS DYNAMIQUE ====================
+# ==================== STYLE CSS (CLAIR + SOMBRE) ====================
 st.markdown("""
 <style>
-    /* Fond général */
+    /* Fond général - adapté au thème sombre */
     .stApp {
         background: linear-gradient(135deg, #f5f7fa 0%, #e8f5e9 100%);
+    }
+    
+    /* Mode sombre : le navigateur gère automatiquement */
+    @media (prefers-color-scheme: dark) {
+        .stApp {
+            background: linear-gradient(135deg, #0a1929 0%, #071a0c 100%);
+        }
+        .stMarkdown, p, li, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
+            color: #e0e0e0 !important;
+        }
+        .stMetric label, .stMetric div {
+            color: #e0e0e0 !important;
+        }
+        .stTabs [data-baseweb="tab-list"] {
+            background-color: #1e2a1e !important;
+        }
+        .stTabs [data-baseweb="tab"] {
+            color: #e0e0e0 !important;
+        }
+        .interpretation {
+            background: #1a2a1a !important;
+            color: #e0e0e0 !important;
+        }
+        .prevention-card {
+            background: #1e2a1e !important;
+            color: #e0e0e0 !important;
+        }
+        .stAlert {
+            background-color: #2e3a2e !important;
+        }
     }
     
     /* Bannière slogan */
@@ -35,9 +65,12 @@ st.markdown("""
         background: linear-gradient(90deg, #1b5e20, #2e7d32);
         padding: 20px;
         border-radius: 15px;
-        color: white;
+        color: white !important;
         text-align: center;
         margin-bottom: 25px;
+    }
+    .slogan p {
+        color: white !important;
     }
     
     /* Pied de page */
@@ -63,6 +96,11 @@ st.markdown("""
         color: #1b5e20;
         font-weight: bold;
     }
+    @media (prefers-color-scheme: dark) {
+        .main-title h1 {
+            color: #4caf50 !important;
+        }
+    }
     
     /* Cartes prévention */
     .prevention-card {
@@ -85,30 +123,24 @@ st.markdown("""
     
     /* Mode selector */
     .mode-banner {
-        background: #1b5e20;
         padding: 15px;
         border-radius: 15px;
         text-align: center;
         margin-bottom: 20px;
     }
-    .mode-banner h3 {
-        color: white;
+    .mode-banner h3, .mode-banner p {
         margin: 0;
         font-weight: bold;
-    }
-    .mode-banner p {
-        color: #e8f5e9;
-        margin: 5px 0 0 0;
     }
     
     /* Boutons carrés dans la sidebar */
     .stButton > button {
-        background-color: #2e7d32 !important;
+        background-color: #1976d2 !important;
         color: white !important;
         border-radius: 15px !important;
         padding: 20px 10px !important;
         height: auto !important;
-        min-height: 100px !important;
+        min-height: 90px !important;
         white-space: normal !important;
         font-weight: bold !important;
         font-size: 1rem !important;
@@ -116,8 +148,16 @@ st.markdown("""
     }
     .stButton > button:hover {
         transform: translateY(-3px);
-        background-color: #1b5e20 !important;
+        background-color: #0d47a1 !important;
         box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    /* Bouton AJOUTER mis en avant */
+    .stButton:first-child button {
+        background-color: #2e7d32 !important;
+    }
+    .stButton:first-child button:hover {
+        background-color: #1b5e20 !important;
     }
     
     /* Onglets stylisés */
@@ -207,7 +247,7 @@ def get_demo_data():
     prof_list = ["Étudiant", "Employé", "Indépendant", "Fonctionnaire"]
     connais_list = ["Très mauvaise", "Mauvaise", "Moyenne", "Bonne", "Très bonne"]
     preserv_list = ["Jamais", "Rarement", "Parfois", "Souvent", "Systématiquement"]
-    partenaires_list = ["1", "2-5", "6-10", "11-20"]
+    partenaires_list = ["0", "1", "2-5", "6-10", "11-20"]  # AJOUT DE L'OPTION "0"
     campagnes_list = ["Jamais", "Rarement", "Parfois", "Souvent", "Très souvent"]
     influence_list = ["Négativement", "Neutre", "Positivement"]
     
@@ -222,7 +262,7 @@ def get_demo_data():
             'niveau_etude': "Universitaire",
             'partenaires_sexuels': "Oui",
             'utilisation_preservatifs': np.random.choice(preserv_list, p=[0.15,0.15,0.25,0.25,0.2]),
-            'nb_partenaires': np.random.choice(partenaires_list, p=[0.3,0.4,0.2,0.1]),
+            'nb_partenaires': np.random.choice(partenaires_list, p=[0.1,0.3,0.4,0.15,0.05]),
             'rapport_non_protege': np.random.choice(["Jamais", "Une fois", "Plusieurs fois"], p=[0.4,0.35,0.25]),
             'alcool_substances': np.random.choice(["Jamais", "Rarement", "Parfois", "Souvent"], p=[0.5,0.3,0.15,0.05]),
             'connaissance_ist': np.random.choice(connais_list, p=[0.1,0.2,0.3,0.25,0.15]),
@@ -247,7 +287,7 @@ with st.sidebar:
     st.markdown("📚 **Programme INF232 EC2**")
     st.markdown("---")
     
-    # Sélecteur de mode dans la sidebar
+    # Sélecteur de mode (BLEU POUR LES DEUX)
     st.markdown("**⚙️ MODE DE L'APPLICATION**")
     mode_col1, mode_col2 = st.columns(2)
     with mode_col1:
@@ -262,8 +302,8 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### 📂 MENU PRINCIPAL")
     
-    # 4 BOUTONS CARRÉS
-    if st.button("✏️➕ AJOUTER UNE PERSONNE", use_container_width=True):
+    # 4 BOUTONS CARRÉS (AJOUTER mis en avant automatiquement par CSS)
+    if st.button("✏️➕ AJOUTER UN PARTICIPANT", use_container_width=True):
         st.session_state.page = "ajouter"
         st.rerun()
     
@@ -297,7 +337,7 @@ with st.sidebar:
             st.markdown("---")
             st.markdown("### 💕 Habitudes")
             utilisation_preservatifs = st.select_slider("Utilisation des préservatifs", options=["Jamais", "Rarement", "Parfois", "Souvent", "Systématiquement"])
-            nb_partenaires = st.selectbox("Nombre de partenaires", ["1", "2-5", "6-10", "11-20", "20+"])
+            nb_partenaires = st.selectbox("Nombre de partenaires", ["0", "1", "2-5", "6-10", "11-20", "20+"])  # AJOUT DE "0"
             rapport_non_protege = st.selectbox("Avez-vous eu un rapport non protégé ?", ["Jamais", "Une fois", "Plusieurs fois"])
             
             st.markdown("---")
@@ -330,26 +370,25 @@ with st.sidebar:
     
     st.metric("👥 Participants", len(st.session_state.donnees) if 'donnees' in st.session_state else 0)
 
-# ==================== AFFICHAGE DU MODE ACTUEL ====================
+# ==================== AFFICHAGE DU MODE ACTUEL (BLEU) ====================
 if st.session_state.mode == "demo":
     st.markdown("""
-    <div class="mode-banner" style="background:#2e7d32;">
-        <h3>🔬 MODE DÉMONSTRATION ACTIF</h3>
-        <p>30 exemples fictifs - Aucune donnée sauvegardée</p>
+    <div class="mode-banner" style="background:#1565c0;">
+        <h3 style="color:white;">🔬 MODE DÉMONSTRATION ACTIF</h3>
+        <p style="color:#e3f2fd;">30 exemples fictifs - Aucune donnée sauvegardée</p>
     </div>
     """, unsafe_allow_html=True)
     df = get_demo_data()
 else:
     st.markdown("""
     <div class="mode-banner" style="background:#1565c0;">
-        <h3>📝 MODE NORMAL ACTIF</h3>
-        <p>Données réelles sauvegardées dans la base SQLite</p>
+        <h3 style="color:white;">📝 MODE NORMAL ACTIF</h3>
+        <p style="color:#e3f2fd;">Données réelles sauvegardées dans la base SQLite</p>
     </div>
     """, unsafe_allow_html=True)
     df = charger_participants()
     if len(df) == 0:
         st.info("📭 Aucune donnée réelle pour le moment. Utilisez le formulaire pour ajouter des participants.")
-        # Créer un DataFrame vide avec les bonnes colonnes
         df = pd.DataFrame(columns=[
             'id', 'date', 'age', 'sexe', 'pays', 'profession', 'niveau_etude',
             'partenaires_sexuels', 'utilisation_preservatifs', 'nb_partenaires',
@@ -364,7 +403,7 @@ df['Connaissance_num'] = df['connaissance_ist'].map({'Très mauvaise':1,'Mauvais
 df['Preservatifs_num'] = df['utilisation_preservatifs'].map({'Jamais':1,'Rarement':2,'Parfois':3,'Souvent':4,'Systématiquement':5})
 df['Campagnes_num'] = df['participation_campagnes'].map({'Jamais':1,'Rarement':2,'Parfois':3,'Souvent':4,'Très souvent':5})
 df['Influence_num'] = df['influence_reseaux_sociaux'].map({'Négativement':1,'Neutre':2,'Positivement':3})
-df['Partenaires_num'] = df['nb_partenaires'].map({'1':1,'2-5':2,'6-10':3,'11-20':4,'20+':5})
+df['Partenaires_num'] = df['nb_partenaires'].map({'0':0,'1':1,'2-5':2,'6-10':3,'11-20':4,'20+':5})
 
 # Score de risque
 df['Score_Risque'] = (
@@ -378,24 +417,33 @@ df['Categorie_Risque'] = df['Score_Risque'].apply(lambda x: 'Faible' if x <= 8 e
 df_clean = df.dropna(subset=['Age', 'Connaissance_num', 'Preservatifs_num', 'Campagnes_num', 'Partenaires_num'])
 
 # ==================== ONGLETS ====================
-tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
-    "📋 Participants", "📈 Régression simple", "🔬 Régression multiple", 
-    "🎯 PCA", "🏷️ Classification (Risque IST)", "🔄 Clustering", "📊 Graphiques", "📚 Prévention"
-])
+tab1 = "📋 Participants"
+tab2 = "📈 Régression simple"
+tab3 = "🔬 Régression multiple"
+tab4 = "🎯 PCA"
+tab5 = "🏷️ Classification (Risque IST)"
+tab6 = "🔄 Clustering"
+tab7 = "📊 Graphiques"
+tab8 = "🛡️ PRÉVENTION IST"
+
+tabs = st.tabs([tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8])
 
 # ============================================================
 # TAB 0 : PARTICIPANTS
 # ============================================================
-with tab0:
+with tabs[0]:
     st.header("📋 Participants à l'étude")
-    st.dataframe(df_clean, use_container_width=True)
-    csv = df_clean.to_csv(index=False).encode('utf-8')
-    st.download_button("📥 Télécharger les données (CSV)", csv, "donnees_ist.csv", "text/csv")
+    if len(df_clean) > 0:
+        st.dataframe(df_clean, use_container_width=True)
+        csv = df_clean.to_csv(index=False).encode('utf-8')
+        st.download_button("📥 Télécharger les données (CSV)", csv, "donnees_ist.csv", "text/csv")
+    else:
+        st.info("Aucune donnée disponible pour le moment.")
 
 # ============================================================
 # TAB 1 : RÉGRESSION SIMPLE
 # ============================================================
-with tab1:
+with tabs[1]:
     st.header("📈 Régression simple : Âge → Connaissance des IST")
     st.markdown("**Objectif :** Vérifier si l'âge influence le niveau de connaissance des IST.")
     
@@ -434,7 +482,7 @@ with tab1:
         - Chaque point représente un participant
         - La ligne verte montre la tendance générale
         - Les couleurs indiquent le niveau de risque IST estimé
-        - R² proche de 1 = bonne prédiction
+        - R² proche de 1 = l'âge est un bon prédicteur
         """)
     else:
         st.warning(f"⚠️ Besoin d'au moins 3 participants. Actuellement : {len(df_clean)}")
@@ -442,7 +490,7 @@ with tab1:
 # ============================================================
 # TAB 2 : RÉGRESSION MULTIPLE
 # ============================================================
-with tab2:
+with tabs[2]:
     st.header("🔬 Régression multiple : Facteurs influençant la connaissance des IST")
     st.markdown("**Objectif :** Identifier quels comportements sont liés à une meilleure connaissance des IST.")
     
@@ -474,6 +522,7 @@ with tab2:
         - Un coefficient POSITIF = plus le facteur augmente, meilleure est la connaissance
         - Un coefficient NÉGATIF = plus le facteur augmente, moins bonne est la connaissance
         - Les points proches de la ligne verte indiquent une bonne prédiction
+        - Un R² élevé (proche de 1) signifie que ces facteurs expliquent bien les différences
         """)
     else:
         st.warning(f"⚠️ Besoin d'au moins 5 participants. Actuellement : {len(df_clean)}")
@@ -481,7 +530,7 @@ with tab2:
 # ============================================================
 # TAB 3 : PCA
 # ============================================================
-with tab3:
+with tabs[3]:
     st.header("🎯 Analyse en Composantes Principales (PCA)")
     st.markdown("**Objectif :** Visualiser les profils similaires dans un espace réduit à 2 dimensions.")
     
@@ -508,17 +557,18 @@ with tab3:
         
         st.info("""
         **📖 Interprétation :**
-        - Les POINTS PROCHES ont des comportements similaires
-        - Les COULEURS indiquent le niveau de risque IST
-        - Plus la variance expliquée est élevée, plus la projection est fidèle
+        - Les POINTS PROCHES ont des comportements similaires face aux IST
+        - Les COULEURS indiquent le niveau de risque estimé
+        - Plus la variance expliquée est élevée, plus la projection est fidèle à la réalité
+        - Observez si les points de même couleur ont tendance à se regrouper
         """)
     else:
         st.warning(f"⚠️ Besoin d'au moins 4 participants. Actuellement : {len(df_clean)}")
 
 # ============================================================
-# TAB 4 : CLASSIFICATION (PRÉDICTION DU RISQUE)
+# TAB 4 : CLASSIFICATION (PRÉDICTION DU RISQUE AVEC CONSEILS PERSONNALISÉS)
 # ============================================================
-with tab4:
+with tabs[4]:
     st.header("🏷️ Classification : Prédire son risque de contracter une IST")
     st.markdown("**Objectif :** Le modèle apprend à estimer votre niveau de risque selon vos habitudes.")
     
@@ -531,6 +581,7 @@ with tab4:
         rf = RandomForestClassifier(n_estimators=100, random_state=42, max_depth=4)
         rf.fit(X, y)
         
+        # Importance des facteurs
         importance_df = pd.DataFrame({
             'Facteur': ['Âge', 'Préservatifs', 'Nombre de partenaires', 'Participation campagnes', 'Connaissance IST'],
             'Importance (%)': (rf.feature_importances_ * 100).round(1)
@@ -541,6 +592,7 @@ with tab4:
                          title="Facteurs influençant le risque IST")
         st.plotly_chart(fig_imp, use_container_width=True)
         
+        # Section test interactif
         st.subheader("🔮 Évaluez VOTRE niveau de risque")
         st.markdown("Renseignez vos habitudes ci-dessous pour une estimation personnalisée.")
         
@@ -550,7 +602,7 @@ with tab4:
             preserv_test = st.select_slider("Utilisation des préservatifs", 
                                            options=["Systématiquement", "Souvent", "Parfois", "Rarement", "Jamais"],
                                            key="risk_preserv")
-            nb_partenaires_test = st.select_slider("Nombre de partenaires (environ)", options=["1", "2-5", "6-10", "11-20", "20+"],
+            nb_partenaires_test = st.select_slider("Nombre de partenaires (environ)", options=["0","1", "2-5", "6-10", "11-20", "20+"],
                                                    key="risk_partenaires")
         with col2:
             campagnes_test = st.select_slider("Participation aux campagnes de dépistage",
@@ -561,10 +613,11 @@ with tab4:
                                            key="risk_connais")
         
         if st.button("🔮 Estimer mon risque", key="predict_risk"):
+            # Conversion
             preserv_map = {"Systématiquement":5, "Souvent":4, "Parfois":3, "Rarement":2, "Jamais":1}
             campagnes_map = {"Très souvent":5, "Souvent":4, "Parfois":3, "Rarement":2, "Jamais":1}
             connais_map = {"Très bonne":5, "Bonne":4, "Moyenne":3, "Mauvaise":2, "Très mauvaise":1}
-            partenaires_map = {"1":1, "2-5":2, "6-10":3, "11-20":4, "20+":5}
+            partenaires_map = {"0":0, "1":1, "2-5":2, "6-10":3, "11-20":4, "20+":5}
             
             preserv_val = preserv_map[preserv_test]
             camp_val = campagnes_map[campagnes_test]
@@ -574,67 +627,13 @@ with tab4:
             pred = rf.predict([[age_test, preserv_val, partenaires_val, camp_val, connais_val]])[0]
             proba = rf.predict_proba([[age_test, preserv_val, partenaires_val, camp_val, connais_val]]).max()
             
-            if pred == 1:
-                st.error(f"⚠️ **Risque ÉLEVÉ** (confiance : {proba:.1%})")
-                st.markdown("""
-                **💡 Recommandations pour réduire votre risque :**
-                - Utilisez des préservatifs à chaque rapport
-                - Réduisez le nombre de partenaires
-                - Faites-vous dépister régulièrement (2 fois par an)
-                - Participez aux campagnes de sensibilisation
-                - Consultez un professionnel de santé
-                """)
-            else:
-                st.success(f"✅ **Risque FAIBLE à MODÉRÉ** (confiance : {proba:.1%})")
-                st.markdown("""
-                **💡 Pour rester protégé(e) :**
-                - Continuez les bonnes pratiques
-                - Maintenez un dépistage régulier
-                - Sensibilisez votre entourage
-                """)
-        
-        try:
-            scores = cross_val_score(rf, X, y, cv=min(3, len(np.unique(y))))
-            st.caption(f"📊 Précision du modèle : {scores.mean():.1%} (basé sur les données existantes)")
-        except:
-            pass
-    else:
-        st.warning(f"⚠️ Besoin d'au moins 6 participants. Actuellement : {len(df_clean)}")
-
-# ============================================================
-# TAB 5 : CLUSTERING
-# ============================================================
-with tab5:
-    st.header("🔄 Clustering : Segmentation automatique des profils")
-    st.markdown("**Objectif :** Regrouper automatiquement les personnes aux habitudes similaires.")
-    
-    if len(df_clean) >= 5:
-        features_cluster = ['Age', 'Connaissance_num', 'Preservatifs_num', 'Partenaires_num']
-        scaler = StandardScaler()
-        X_cluster = scaler.fit_transform(df_clean[features_cluster])
-        
-        k = st.slider("Nombre de segments (clusters)", 2, 4, 3, 
-                      help="Plus il y a de segments, plus la segmentation est fine")
-        kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
-        clusters = kmeans.fit_predict(X_cluster)
-        df_clean['Segment'] = clusters
-        
-        fig = px.scatter(df_clean, x='Age', y='Connaissance_num', 
-                         color=clusters.astype(str), size='Preservatifs_num',
-                         title=f"Segmentation des participants en {k} groupes",
-                         hover_data=['profession', 'Categorie_Risque'])
-        st.plotly_chart(fig, use_container_width=True)
-        
-        st.subheader("📊 Profil type de chaque segment")
-        profil = df_clean.groupby('Segment')[['Age', 'Connaissance_num', 'Preservatifs_num', 'Partenaires_num']].mean().round(1)
-        profil.columns = ['Âge moyen', 'Connaissance (1-5)', 'Préservatifs (1-5)', 'Nombre de partenaires']
-        st.dataframe(profil)
-        
-        st.info("""
-        **📖 Interprétation :**
-        - Chaque couleur représente un groupe aux habitudes similaires
-        - Le tableau montre le profil type de chaque groupe
-        - Identifiez à quel groupe vous ressemblez pour mieux cibler vos besoins
-        """)
-    else:
-        st.warning(f"⚠️ Besoin d'au moins 5 participants. Actuellement : {len(df_clean)} participants.")
+            # IDENTIFICATION DES FACTEURS DE RISQUE
+            facteurs_risque = []
+            if preserv_val <= 2:
+                facteurs_risque.append("⚠️ Utilisation irrégulière des préservatifs")
+            if partenaires_val >= 4:
+                facteurs_risque.append("⚠️ Nombre élevé de partenaires")
+            if camp_val <= 2:
+                facteurs_risque.append("⚠️ Dépistage rare ou absent")
+            if connais_val <= 2:
+                facteurs_risque.append("⚠️ Con
