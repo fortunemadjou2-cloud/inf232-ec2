@@ -134,7 +134,6 @@ with mode_col2:
             st.session_state.mode = "normal"
             st.rerun()
 
-# Affichage du mode actuel
 if st.session_state.mode == "demo":
     st.markdown("""
     <div class="mode-selector mode-demo" style="text-align:center; border-radius:15px; padding:10px; margin-bottom:20px;">
@@ -249,10 +248,8 @@ def get_demo_data():
 # ==================== CHARGEMENT DES DONNÉES ====================
 if st.session_state.mode == "demo":
     df = get_demo_data()
-elif st.session_state.mode == "normal":
-    df = charger_participants()
 else:
-    df = get_demo_data()
+    df = charger_participants()
 
 # ==================== MENU 4 CARRÉS ====================
 st.markdown("---")
@@ -402,6 +399,7 @@ elif st.session_state.page == "participants":
             with col2:
                 if st.button("🗑️ Supprimer tout"):
                     supprimer_toutes_donnees()
+                    st.success("Toutes les données ont été supprimées !")
                     st.rerun()
 
 # ==================== PAGE 3 : ANALYSES ====================
@@ -414,7 +412,6 @@ elif st.session_state.page == "analyses":
     if len(df) < 3:
         st.warning(f"⚠️ Besoin d'au moins 3 participants. Actuellement : {len(df)}")
     else:
-        # Conversion
         df['Age'] = pd.to_numeric(df['age'], errors='coerce')
         df['Connaissance_num'] = df['connaissance_ist'].map({'Très mauvaise':1,'Mauvaise':2,'Moyenne':3,'Bonne':4,'Très bonne':5})
         df['Preservatifs_num'] = df['utilisation_preservatifs'].map({'Jamais':1,'Rarement':2,'Parfois':3,'Souvent':4,'Systématiquement':5})
@@ -492,18 +489,24 @@ elif st.session_state.page == "analyses":
             with col1:
                 fig_hist = px.histogram(df_clean, x='Age', nbins=15, title="Distribution des âges")
                 st.plotly_chart(fig_hist, use_container_width=True)
-                fig_bar = px.bar(df_clean['connaissance_ist'].value_counts().reset_index(), x='index', y='connaissance_ist', title="Niveau de connaissance")
+                
+                connais_counts = df_clean['connaissance_ist'].value_counts().reset_index()
+                connais_counts.columns = ['Niveau', 'Nombre']
+                fig_bar = px.bar(connais_counts, x='Niveau', y='Nombre', title="Niveau de connaissance des IST")
                 st.plotly_chart(fig_bar, use_container_width=True)
+            
             with col2:
-                fig_pie = px.pie(df_clean, names='Categorie_Risque', title="Répartition par risque")
+                fig_pie = px.pie(df_clean, names='Categorie_Risque', title="Répartition par niveau de risque")
                 st.plotly_chart(fig_pie, use_container_width=True)
-                fig_preserv = px.bar(df_clean['utilisation_preservatifs'].value_counts().reset_index(), x='index', y='utilisation_preservatifs', title="Utilisation des préservatifs")
+                
+                preserv_counts = df_clean['utilisation_preservatifs'].value_counts().reset_index()
+                preserv_counts.columns = ['Fréquence', 'Nombre']
+                fig_preserv = px.bar(preserv_counts, x='Fréquence', y='Nombre', title="Utilisation des préservatifs")
                 st.plotly_chart(fig_preserv, use_container_width=True)
 
 # ==================== PAGE 4 : PRÉVENTION ====================
 elif st.session_state.page == "prevention":
     st.header("🛡️🩺 ESPACE PRÉVENTION IST")
-    
     st.warning("⚠️ Ces informations ne remplacent pas l'avis d'un médecin. Consultez un professionnel de santé.")
     
     with st.expander("📖 Qu'est-ce qu'une IST ?", expanded=True):
@@ -535,21 +538,34 @@ elif st.session_state.page == "prevention":
         **Hépatite B :** Fatigue, jaunisse. Vaccination disponible.
         """)
     
-    with st.expander("🚨 Symptômes évocateurs"):
-        st.markdown("- Écoulements anormaux\n- Douleurs en urinant\n- Lésions ou verrues\n- Démangeaisons\n- Ganglions gonflés")
+    with st.expander("🚨 Symptômes évocateurs", expanded=True):
+        st.markdown("""
+        - Écoulements anormaux (urètre, vagin, anus)
+        - Douleurs ou brûlures en urinant
+        - Lésions, boutons, ulcères ou verrues
+        - Démangeaisons intenses
+        - Ganglions gonflés dans l'aine
+        - Fièvre inexpliquée
+        """)
         st.warning("⚠️ Dépistage régulier indispensable (2x par an)")
     
     with st.expander("🛡️ Prévention"):
-        st.markdown("- Préservatifs\n- Dépistage régulier\n- Vaccination HPV\n- Communication avec le/la partenaire")
+        st.markdown("""
+        - **Préservatifs masculins et féminins**
+        - **Dépistage régulier** (au moins 2x par an)
+        - **Vaccination** (HPV, Hépatite B)
+        - **Communication** avec le/la partenaire
+        - **Réduction du nombre de partenaires**
+        """)
     
-    with st.expander("📍 Dépistage"):
+    with st.expander("📍 Où se faire dépister ?"):
         col1, col2 = st.columns(2)
         with col1:
-            st.markdown("**Cameroun :** Hôpital Général Yaoundé, Hôpital Laquintinie Douala")
-            st.markdown("**Sénégal :** Hôpital Fann Dakar, ALCS")
+            st.markdown("**🇨🇲 Cameroun :** Hôpital Général de Yaoundé, Hôpital Laquintinie (Douala)")
+            st.markdown("**🇸🇳 Sénégal :** Hôpital de Fann (Dakar), ALCS")
         with col2:
-            st.markdown("**Côte d'Ivoire :** INHP Abidjan")
-            st.markdown("**Autres :** Hôpitaux publics, Croix-Rouge")
+            st.markdown("**🇨🇮 Côte d'Ivoire :** INHP (Abidjan)")
+            st.markdown("**🌍 Autres :** Hôpitaux publics, Croix-Rouge")
 
 # ==================== FOOTER ====================
 st.markdown("""
