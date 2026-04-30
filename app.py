@@ -24,30 +24,47 @@ st.set_page_config(
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap');
-    .stApp, .main, .block-container { font-family: 'Manrope', sans-serif !important; }
+    
+    .stApp, .main, .block-container {
+        font-family: 'Manrope', sans-serif !important;
+    }
+    
     .nexhealth-banner {
         background: linear-gradient(90deg, #1b5e20 0%, #2e7d32 100%);
         border-radius: 24px;
         padding: 40px;
         margin-bottom: 20px;
         color: #ffffff !important;
+        box-shadow: 0 10px 30px rgba(27, 94, 32, 0.15);
     }
-    .nexhealth-banner h1, .nexhealth-banner p { color: #ffffff !important; }
+    .nexhealth-banner h1, .nexhealth-banner p {
+        color: #ffffff !important;
+    }
+    
     .mode-selector {
         margin-bottom: 20px;
         padding: 15px;
         border-radius: 20px;
         text-align: center;
     }
-    .mode-demo { background: linear-gradient(90deg, #e8f5e9, #c8e6c9); border: 2px solid #2e7d32; }
-    .mode-normal { background: linear-gradient(90deg, #e3f2fd, #bbdef5); border: 2px solid #1565c0; }
+    .mode-demo {
+        background: linear-gradient(90deg, #e8f5e9, #c8e6c9);
+        border: 2px solid #2e7d32;
+    }
+    .mode-normal {
+        background: linear-gradient(90deg, #e3f2fd, #bbdef5);
+        border: 2px solid #1565c0;
+    }
+    
     .stButton > button {
         background-color: #2e7d32 !important;
         color: white !important;
         border-radius: 40px !important;
         padding: 10px 20px !important;
         font-weight: 600 !important;
+        font-family: 'Manrope', sans-serif !important;
     }
+    
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
         background-color: #f1f5eb;
@@ -59,7 +76,11 @@ st.markdown("""
         padding: 8px 20px !important;
         font-weight: 600 !important;
     }
-    .stTabs [aria-selected="true"] { background-color: #2e7d32 !important; color: white !important; }
+    .stTabs [aria-selected="true"] {
+        background-color: #2e7d32 !important;
+        color: white !important;
+    }
+    
     .interpretation-box {
         background: #e8f5e9;
         padding: 20px;
@@ -68,6 +89,7 @@ st.markdown("""
         border-left: 5px solid #2e7d32;
         color: #1b5e20;
     }
+    
     .nexhealth-footer {
         text-align: center;
         padding: 20px;
@@ -112,6 +134,7 @@ with mode_col2:
             st.session_state.mode = "normal"
             st.rerun()
 
+# Affichage du mode actuel
 if st.session_state.mode == "demo":
     st.markdown("""
     <div class="mode-selector mode-demo" style="text-align:center; border-radius:15px; padding:10px; margin-bottom:20px;">
@@ -226,8 +249,10 @@ def get_demo_data():
 # ==================== CHARGEMENT DES DONNÉES ====================
 if st.session_state.mode == "demo":
     df = get_demo_data()
-else:
+elif st.session_state.mode == "normal":
     df = charger_participants()
+else:
+    df = get_demo_data()
 
 # ==================== MENU 4 CARRÉS ====================
 st.markdown("---")
@@ -265,7 +290,7 @@ if st.session_state.page == "ajouter":
     st.markdown("*Toutes vos réponses sont anonymes et seront conservées dans la base de données.*")
     
     if st.session_state.mode == "demo":
-        st.warning("⚠️ Mode Démo actif : Les données ne seront pas sauvegardees. Passez en Mode Normal pour enregistrer.")
+        st.warning("⚠️ **Mode Démo actif** : Les données ne seront pas sauvegardées. Passez en Mode Normal pour enregistrer.")
     
     with st.form("collecte", clear_on_submit=True):
         col1, col2 = st.columns(2)
@@ -293,7 +318,7 @@ if st.session_state.page == "ajouter":
         col3, col4 = st.columns(2)
         
         with col3:
-            st.markdown("**🏥 Connaissance et dépistage**")
+            st.markdown("**🏥 Connaissance, dépistage et prévention**")
             connaissance_ist = st.select_slider("Comment évaluez-vous votre connaissance des IST ?",
                 options=["Très mauvaise", "Mauvaise", "Moyenne", "Bonne", "Très bonne"])
             ist_connues = st.multiselect("Quelles IST connaissez-vous ?",
@@ -352,17 +377,17 @@ if st.session_state.page == "ajouter":
                 vaccin_hpv, consultation_medecin
             )
             sauvegarder_participant(data)
-            st.success("✅ Merci ! Votre reponse a ete enregistree.")
+            st.success("✅ Merci ! Votre réponse a été enregistrée.")
             st.balloons()
         elif submit and st.session_state.mode == "demo":
-            st.info("ℹ️ Mode Demo actif : Les donnees ne sont pas sauvegardees.")
+            st.info("ℹ️ Mode Démo actif : Les données ne sont pas sauvegardées.")
 
 # ==================== PAGE 2 : PARTICIPANTS ====================
 elif st.session_state.page == "participants":
-    st.header("📋👥 Participants enregistres")
+    st.header("📋👥 Participants enregistrés")
     
     if st.session_state.mode == "demo":
-        st.info("📊 Mode Demo : Voici 30 exemples fictifs de participants")
+        st.info("📊 **Mode Démo** : Voici 30 exemples fictifs de participants")
         st.dataframe(df, use_container_width=True)
     else:
         if len(df) == 0:
@@ -381,25 +406,25 @@ elif st.session_state.page == "participants":
 
 # ==================== PAGE 3 : ANALYSES ====================
 elif st.session_state.page == "analyses":
-    st.header("📈🔬 Analyses avancees des donnees")
+    st.header("📈🔬 Analyses avancées des données")
     
     if st.session_state.mode == "demo":
-        st.info("📊 Mode Demo : Analyses basees sur 30 exemples fictifs")
+        st.info("📊 **Mode Démo** : Analyses basées sur 30 exemples fictifs")
     
     if len(df) < 3:
         st.warning(f"⚠️ Besoin d'au moins 3 participants. Actuellement : {len(df)}")
     else:
-        # Conversion des donnees
+        # Conversion
         df['Age'] = pd.to_numeric(df['age'], errors='coerce')
-        df['Connaissance_num'] = df['connaissance_ist'].map({'Tres mauvaise':1,'Mauvaise':2,'Moyenne':3,'Bonne':4,'Tres bonne':5})
-        df['Preservatifs_num'] = df['utilisation_preservatifs'].map({'Jamais':1,'Rarement':2,'Parfois':3,'Souvent':4,'Systematiquement':5})
+        df['Connaissance_num'] = df['connaissance_ist'].map({'Très mauvaise':1,'Mauvaise':2,'Moyenne':3,'Bonne':4,'Très bonne':5})
+        df['Preservatifs_num'] = df['utilisation_preservatifs'].map({'Jamais':1,'Rarement':2,'Parfois':3,'Souvent':4,'Systématiquement':5})
         df['Partenaires_num'] = df['nb_partenaires'].map({'0':0,'1':1,'2-5':2,'6-10':3,'11-20':4,'20+':5})
         df_clean = df.dropna(subset=['Age', 'Connaissance_num', 'Preservatifs_num'])
         
         df_clean['Score_Risque'] = (6 - df_clean['Preservatifs_num']) * 2 + df_clean['Partenaires_num'] * 1.5
-        df_clean['Categorie_Risque'] = df_clean['Score_Risque'].apply(lambda x: 'Faible' if x <= 8 else ('Modere' if x <= 15 else 'Eleve'))
+        df_clean['Categorie_Risque'] = df_clean['Score_Risque'].apply(lambda x: 'Faible' if x <= 8 else ('Modéré' if x <= 15 else 'Élevé'))
         
-        tab1, tab2, tab3, tab4, tab5 = st.tabs(["Regression simple", "Regression multiple", "PCA", "Classification", "Graphiques"])
+        tab1, tab2, tab3, tab4, tab5 = st.tabs(["📈 Régression simple", "🔬 Régression multiple", "🎯 PCA", "🏷️ Classification", "📊 Graphiques"])
         
         with tab1:
             if len(df_clean) >= 3:
@@ -412,14 +437,14 @@ elif st.session_state.page == "analyses":
                 fig.add_trace(go.Scatter(x=x_range, y=y_pred, mode='lines', name='Tendance', line=dict(color='#2e7d32')))
                 st.plotly_chart(fig, use_container_width=True)
                 st.metric("R²", f"{r2_score(y, modele.predict(X)):.3f}")
-                st.info("Plus le R² est proche de 1, plus l'age explique les differences.")
+                st.info("📖 Plus le R² est proche de 1, plus l'âge explique les différences.")
         
         with tab2:
             if len(df_clean) >= 4:
                 X = df_clean[['Age', 'Preservatifs_num', 'Partenaires_num']].values
                 y = df_clean['Connaissance_num'].values
                 modele = LinearRegression().fit(X, y)
-                st.dataframe(pd.DataFrame({'Facteur':['Age','Preservatifs','Partenaires'],'Coefficient':modele.coef_}))
+                st.dataframe(pd.DataFrame({'Facteur':['Âge','Préservatifs','Partenaires'],'Coefficient':modele.coef_}))
                 predictions = modele.predict(X)
                 fig = px.scatter(x=y, y=predictions)
                 fig.add_trace(go.Scatter(x=[1,5], y=[1,5], mode='lines', name='Parfait', line=dict(dash='dash')))
@@ -438,93 +463,97 @@ elif st.session_state.page == "analyses":
         
         with tab4:
             if len(df_clean) >= 5:
-                df_clean['Cible'] = (df_clean['Categorie_Risque'] == 'Eleve').astype(int)
+                df_clean['Cible'] = (df_clean['Categorie_Risque'] == 'Élevé').astype(int)
                 X = df_clean[['Age', 'Preservatifs_num', 'Partenaires_num']].values
                 y = df_clean['Cible'].values
                 rf = RandomForestClassifier().fit(X, y)
                 
-                st.subheader("Testez votre risque")
+                st.subheader("🔮 Testez votre risque")
                 col1, col2 = st.columns(2)
                 with col1:
-                    age_t = st.slider("Age", 18, 65, 25, key="age_t")
-                    p_t = st.select_slider("Preservatifs", options=["Systematiquement","Souvent","Parfois","Rarement","Jamais"], key="p_t")
+                    age_t = st.slider("Âge", 18, 65, 25, key="age_t")
+                    p_t = st.select_slider("Préservatifs", options=["Systématiquement","Souvent","Parfois","Rarement","Jamais"], key="p_t")
                 with col2:
                     k_t = st.select_slider("Partenaires", options=["1","2-5","6-10","11-20","20+"], key="k_t")
                 
                 if st.button("Estimer mon risque"):
-                    p_map = {"Systematiquement":5,"Souvent":4,"Parfois":3,"Rarement":2,"Jamais":1}
+                    p_map = {"Systématiquement":5,"Souvent":4,"Parfois":3,"Rarement":2,"Jamais":1}
                     k_map = {"1":1,"2-5":2,"6-10":3,"11-20":4,"20+":5}
                     pred = rf.predict([[age_t, p_map[p_t], k_map[k_t]]])[0]
                     if pred == 1:
-                        st.error("Risque ELEVE - Consultez l'onglet Prevention")
+                        st.error("⚠️ Risque ÉLEVÉ - Consultez l'onglet Prévention")
+                        st.markdown("💡 Conseils : utilisez des préservatifs, réduisez les partenaires, dépistez-vous.")
                     else:
-                        st.success("Risque FAIBLE a MODERE")
+                        st.success("✅ Risque FAIBLE à MODÉRÉ")
+                        st.markdown("💡 Continuez les bonnes pratiques et restez informé(e).")
         
         with tab5:
             col1, col2 = st.columns(2)
             with col1:
-                fig_hist = px.histogram(df_clean, x='Age', nbins=15, title="Distribution des ages")
+                fig_hist = px.histogram(df_clean, x='Age', nbins=15, title="Distribution des âges")
                 st.plotly_chart(fig_hist, use_container_width=True)
-                connais_counts = df_clean['connaissance_ist'].value_counts().reset_index()
-                connais_counts.columns = ['Niveau', 'Nombre']
-                fig_bar = px.bar(connais_counts, x='Niveau', y='Nombre', title="Niveau de connaissance")
+                fig_bar = px.bar(df_clean['connaissance_ist'].value_counts().reset_index(), x='index', y='connaissance_ist', title="Niveau de connaissance")
                 st.plotly_chart(fig_bar, use_container_width=True)
             with col2:
-                fig_pie = px.pie(df_clean, names='Categorie_Risque', title="Repartition par risque")
+                fig_pie = px.pie(df_clean, names='Categorie_Risque', title="Répartition par risque")
                 st.plotly_chart(fig_pie, use_container_width=True)
-                preserv_counts = df_clean['utilisation_preservatifs'].value_counts().reset_index()
-                preserv_counts.columns = ['Frequence', 'Nombre']
-                fig_preserv = px.bar(preserv_counts, x='Frequence', y='Nombre', title="Utilisation des preservatifs")
+                fig_preserv = px.bar(df_clean['utilisation_preservatifs'].value_counts().reset_index(), x='index', y='utilisation_preservatifs', title="Utilisation des préservatifs")
                 st.plotly_chart(fig_preserv, use_container_width=True)
 
-# ==================== PAGE 4 : PREVENTION ====================
+# ==================== PAGE 4 : PRÉVENTION ====================
 elif st.session_state.page == "prevention":
-    st.header("🛡️🩺 ESPACE PREVENTION IST")
+    st.header("🛡️🩺 ESPACE PRÉVENTION IST")
     
-    st.warning("Ces informations ne remplacent pas l'avis d'un medecin. Consultez un professionnel de sante.")
+    st.warning("⚠️ Ces informations ne remplacent pas l'avis d'un médecin. Consultez un professionnel de santé.")
     
-    with st.expander("Qu'est-ce qu'une IST ?", expanded=True):
+    with st.expander("📖 Qu'est-ce qu'une IST ?", expanded=True):
         st.markdown("""
-        Les IST (Infections Sexuellement Transmissibles) sont des infections qui se transmettent lors de rapports sexuels non proteges.
+        Les **IST (Infections Sexuellement Transmissibles)** sont des infections qui se transmettent lors de rapports sexuels non protégés.
         
-        **Modes de transmission :** rapports vaginaux, anaux, oraux, partage de seringues, mere-enfant.
+        **Modes de transmission :** rapports vaginaux, anaux, oraux, partage de seringues, mère-enfant.
         
-        **Caracteristiques :**
+        **Caractéristiques :**
         - Certaines sont asymptomatiques
-        - Toutes peuvent avoir des consequences graves
-        - La plupart sont evitables ou soignables
+        - Toutes peuvent avoir des conséquences graves
+        - La plupart sont évitables ou soignables
         """)
     
-    with st.expander("Principales IST"):
+    with st.expander("🦠 Principales IST"):
         st.markdown("""
-        **VIH :** Destruction immunitaire. Prevention : preservatifs, PrEP.
-        **Syphilis :** Lesions, complications neurologiques. Guerissable.
-        **Gonorrhee :** Ecoulements, douleurs. Risque d'infertilite.
-        **Chlamydia :** Asymptomatique. Peut rendre sterile.
-        **HPV :** Verrues, cancers. Vaccination preventive.
-        **Herpes :** Vesicules douloureuses. Recurrences possibles.
-        **Hepatite B :** Fatigue, jaunisse. Vaccination disponible.
+        **VIH :** Destruction immunitaire. Prévention : préservatifs, PrEP.
+        
+        **Syphilis :** Lésions, complications neurologiques. Guérissable.
+        
+        **Gonorrhée :** Écoulements, douleurs. Risque d'infertilité.
+        
+        **Chlamydia :** Asymptomatique. Peut rendre stérile.
+        
+        **HPV :** Verrues, cancers. Vaccination préventive.
+        
+        **Herpès :** Vésicules douloureuses. Récurrences possibles.
+        
+        **Hépatite B :** Fatigue, jaunisse. Vaccination disponible.
         """)
     
-    with st.expander("Symptomes evocateurs"):
-        st.markdown("- Ecoulements anormaux\n- Douleurs en urinant\n- Lesions ou verrues\n- Demangeaisons\n- Ganglions gonfles")
-        st.warning("Depistage regulier indispensable (2x par an)")
+    with st.expander("🚨 Symptômes évocateurs"):
+        st.markdown("- Écoulements anormaux\n- Douleurs en urinant\n- Lésions ou verrues\n- Démangeaisons\n- Ganglions gonflés")
+        st.warning("⚠️ Dépistage régulier indispensable (2x par an)")
     
-    with st.expander("Prevention"):
-        st.markdown("- Preservatifs\n- Depistage regulier\n- Vaccination HPV\n- Communication avec le/la partenaire")
+    with st.expander("🛡️ Prévention"):
+        st.markdown("- Préservatifs\n- Dépistage régulier\n- Vaccination HPV\n- Communication avec le/la partenaire")
     
-    with st.expander("Depistage"):
+    with st.expander("📍 Dépistage"):
         col1, col2 = st.columns(2)
         with col1:
-            st.markdown("**Cameroun :** Hopital General Yaounde, Hopital Laquintinie Douala")
-            st.markdown("**Senegal :** Hopital Fann Dakar, ALCS")
+            st.markdown("**Cameroun :** Hôpital Général Yaoundé, Hôpital Laquintinie Douala")
+            st.markdown("**Sénégal :** Hôpital Fann Dakar, ALCS")
         with col2:
-            st.markdown("**Cote d'Ivoire :** INHP Abidjan")
-            st.markdown("**Autres :** Hopitaux publics, Croix-Rouge")
+            st.markdown("**Côte d'Ivoire :** INHP Abidjan")
+            st.markdown("**Autres :** Hôpitaux publics, Croix-Rouge")
 
 # ==================== FOOTER ====================
 st.markdown("""
 <div class="nexhealth-footer">
-    MADJOU FORTUNE NESLINE (24G2876) - INF232 EC2
+    📌 MADJOU FORTUNE NESLINE (24G2876) - INF232 EC2
 </div>
 """, unsafe_allow_html=True)
