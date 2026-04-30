@@ -544,47 +544,86 @@ elif st.session_state.page == "analyses":
                     st.warning(f"⚠️ Besoin d'au moins 4 participants. Actuellement : {len(df_clean)}")
         
         # Classification
-        with tab4:
-            with tab4:
-                st.header("🏷️ Classification : Prédire son risque de contracter une IST")
-                st.markdown("*Objectif :* Le modèle apprend à estimer votre niveau de risque selon vos habitudes.")
+with tab4:
+    with tab4:
+        st.header("🏷️ Classification : Prédire son risque de contracter une IST")
+        st.markdown("*Objectif :* Le modèle apprend à estimer votre niveau de risque selon vos habitudes.")
+        
+        if len(df_clean) >= 6:
+            df_clean['Cible_Risque'] = (df_clean['Categorie_Risque'] == 'Élevé').astype(int)
+            
+            X = df_clean[['Age', 'Preservatifs_num', 'Partenaires_num', 'Campagnes_num', 'Connaissance_num']].values
+            y = df_clean['Cible_Risque'].values
+            
+            rf = RandomForestClassifier(n_estimators=100, random_state=42, max_depth=4)
+            rf.fit(X, y)
+            
+            importance_df = pd.DataFrame({
+                'Facteur': ['Âge', 'Préservatifs', 'Nombre de partenaires', 'Participation campagnes', 'Connaissance IST'],
+                'Importance (%)': (rf.feature_importances_ * 100).round(1)
+            }).sort_values('Importance (%)', ascending=False)
+            st.dataframe(importance_df, use_container_width=True)
+            
+            fig_imp = px.bar(importance_df, x='Importance (%)', y='Facteur', orientation='h',
+                             title="Facteurs influençant le risque IST")
+            st.plotly_chart(fig_imp, use_container_width=True)
+            
+            st.subheader("🔮 Évaluez VOTRE niveau de risque")
+            st.markdown("Renseignez vos habitudes ci-dessous pour une estimation personnalisée.")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                age_test = st.slider("Votre âge", 18, 65, 25, key="risk_age")
+                preserv_test = st.select_slider("Utilisation des préservatifs", 
+                                               options=["Systématiquement", "Souvent", "Parfois", "Rarement", "Jamais"],
+                                               key="risk_preserv")
+                nb_partenaires_test = st.select_slider("Nombre de partenaires (environ)", options=["1", "2-5", "6-10", "11-20", "20+"],
+                                                       key="risk_partenaires")
+            with col2:
+                campagnes_test = st.select_slider("Participation aux campagnes de dépistage",
+                                                 options=["Très souvent", "Souvent", "Parfois", "Rarement", "Jamais"],
+                                                 key="risk_campagnes")
+                connais_test = st.select_slider("Connaissance des IST",
+                                               options=["Très bonne", "Bonne", "Moyenne", "Mauvaise", "Très mauvaise"],
+                                               key="risk_connais")
+            
+            if st.button("🔮 Estimer mon risque", key="predict_risk"):
+                preserv_map = {"Systématiquement":5, "Souvent":4, "Parfois":3, "Rarement":2, "Jamais":1}
+                campagnes_map = {"Très souvent":5, "Souvent":4, "Parfois":3, "Rarement":2, "Jamais":1}
+                connais_map = {"Très bonne":5, "Bonne":4, "Moyenne":3, "Mauvaise":2, "Très mauvaise":1}
+                partenaires_map = {"1":1, "2-5":2, "6-10":3, "11-20":4, "20+":5}
                 
-                if len(df_clean) >= 6:
-                    df_clean['Cible_Risque'] = (df_clean['Categorie_Risque'] == 'Élevé').astype(int)
-                    
-                    X = df_clean[['Age', 'Preservatifs_num', 'Partenaires_num', 'Campagnes_num', 'Connaissance_num']].values
-                    y = df_clean['Cible_Risque'].values
-                    
-                    rf = RandomForestClassifier(n_estimators=100, random_state=42, max_depth=4)
-                    rf.fit(X, y)
-                    
-                    importance_df = pd.DataFrame({
-                        'Facteur': ['Âge', 'Préservatifs', 'Nombre de partenaires', 'Participation campagnes', 'Connaissance IST'],
-                        'Importance (%)': (rf.feature_importances_ * 100).round(1)
-                    }).sort_values('Importance (%)', ascending=False)
-                    st.dataframe(importance_df, use_container_width=True)
-                    
-                    fig_imp = px.bar(importance_df, x='Importance (%)', y='Facteur', orientation='h',
-                                     title="Facteurs influençant le risque IST")
-                    st.plotly_chart(fig_imp, use_container_width=True)
-                    
-                    st.subheader("🔮 Évaluez VOTRE niveau de risque")
-                    st.markdown("Renseignez vos habitudes ci-dessous pour une estimation personnalisée.")
-                    
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        age_test = st.slider("Votre âge", 18, 65, 25, key="risk_age")
-                        preserv_test = st.select_slider("Utilisation des préservatifs", 
-                                                       options=["Systématiquement", "Souvent", "Parfois", "Rarement", "Jamais"],
-                                                       key="risk_preserv")
-                        nb_partenaires_test = st.select_slider("Nombre de partenaires (environ)", options=["1", "2-5", "6-10", "11-20", "20+"],
-                                                               key="risk_partenaires")
-                    with col2:
-                        campagnes_test = st.select_slider("Participation aux campagnes de dépistage",
-                                                         options=["Très souvent", "Souvent", "Parfois", "Rarement", "Jamais"],
-                                                         key="risk_campagnes")
-                        connais_test = st.select_slider("Connaissance des IST",
-                                                       options=["Très bonne", "Bonne", "Moyenne", "Mauvaise", "Très mauvaise"],
-                                                       key="risk_connais")
-                    
-                    if st.button("🔮 Estimer mon risque", key="predict_risk"):
+                preserv_val = preserv_map[preserv_test]
+                camp_val = campagnes_map[campagnes_test]
+                connais_val = connais_map[connais_test]
+                partenaires_val = partenaires_map[nb_partenaires_test]
+                
+                pred = rf.predict([[age_test, preserv_val, partenaires_val, camp_val, connais_val]])[0]
+                proba = rf.predict_proba([[age_test, preserv_val, partenaires_val, camp_val, connais_val]]).max()
+                
+                if pred == 1:
+                    st.error(f"⚠️ **Risque ÉLEVÉ** (confiance : {proba:.1%})")
+                    st.markdown("""
+                    **💡 Recommandations pour réduire votre risque :**
+                    - Utilisez des préservatifs à chaque rapport
+                    - Réduisez le nombre de partenaires
+                    - Faites-vous dépister régulièrement (2 fois par an)
+                    - Participez aux campagnes de sensibilisation
+                    - Consultez un professionnel de santé
+                    """)
+                else:
+                    st.success(f"✅ **Risque FAIBLE à MODÉRÉ** (confiance : {proba:.1%})")
+                    st.markdown("""
+                    **💡 Pour rester protégé(e) :**
+                    - Continuez les bonnes pratiques
+                    - Maintenez un dépistage régulier
+                    - Sensibilisez votre entourage
+                    """)
+            
+            try:
+                scores = cross_val_score(rf, X, y, cv=min(3, len(np.unique(y))))
+                st.caption(f"📊 Précision du modèle : {scores.mean():.1%} (basé sur {len(df_clean)} participants)")
+            except:
+                pass
+        else:
+            st.warning(f"⚠️ Besoin d'au moins 6 participants. Actuellement : {len(df_clean)}")
